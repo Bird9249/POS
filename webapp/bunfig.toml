@@ -1,0 +1,7 @@
+[install]
+# Force hoisted install - prevents duplicate React in nested node_modules
+linker = "hoisted"
+
+[serve.static]
+plugins = ["bun-plugin-tailwind"]
+env = "PUBLIC_*"
