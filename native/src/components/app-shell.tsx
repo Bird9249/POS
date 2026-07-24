@@ -1,4 +1,4 @@
-import { useMemo, useState, type ReactNode } from "react";
+import { useEffect, useMemo, useState, type ReactNode } from "react";
 import { Link, useNavigate, useRouterState } from "@tanstack/react-router";
 import { Menu, LogOut } from "lucide-react";
 import { toast } from "sonner";
@@ -38,6 +38,7 @@ import {
 } from "@/features/auth/nav-access";
 import { getSessionPermissions, useSession } from "@/features/auth/use-session";
 import { authClient } from "@/lib/api/auth-client";
+import { getLocalDb } from "@/lib/db/client";
 import { navIcons } from "@/lib/nav";
 import { cn } from "@/lib/utils";
 
@@ -57,6 +58,11 @@ export function AppShell({ children }: { children: ReactNode }) {
   );
   const userName = data?.user?.name || data?.user?.email || "ຜູ້ໃຊ້";
   const initials = userName.slice(0, 2).toUpperCase();
+
+  // Warm SQLite + migrations before the first sync button press.
+  useEffect(() => {
+    void getLocalDb().catch(() => {});
+  }, []);
 
   async function confirmSignOut() {
     setSigningOut(true);

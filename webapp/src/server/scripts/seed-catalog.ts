@@ -1,6 +1,6 @@
 import { eq } from "drizzle-orm";
 import type { DbClient } from "@/server/platform/db/client";
-import { category, product } from "@/server/platform/db/schema";
+import { category, product, stockAdjustment } from "@/server/platform/db/schema";
 import { logger } from "@/server/platform/observability/logger";
 
 const CATEGORIES = [
@@ -85,9 +85,10 @@ export async function seedCatalog(db: DbClient) {
       .where(eq(category.id, c.id))
       .limit(1);
     if (existing[0]) {
+      // Don't bump updatedAt when unchanged — avoids full delta re-pull on every seed.
       await db
         .update(category)
-        .set({ name: c.name, updatedAt: new Date() })
+        .set({ name: c.name })
         .where(eq(category.id, c.id));
     } else {
       await db.insert(category).values(c);
@@ -102,6 +103,7 @@ export async function seedCatalog(db: DbClient) {
       .where(eq(product.id, p.id))
       .limit(1);
     if (existing[0]) {
+      // Keep updatedAt stable on re-seed so clients don't re-download the whole catalog.
       await db
         .update(product)
         .set({
@@ -114,7 +116,6 @@ export async function seedCatalog(db: DbClient) {
           stockQty: p.stockQty,
           minStock: p.minStock,
           deletedAt: null,
-          updatedAt: new Date(),
         })
         .where(eq(product.id, p.id));
     } else {
@@ -122,4 +123,41 @@ export async function seedCatalog(db: DbClient) {
     }
   }
   logger.info(`Products seeded: ${PRODUCTS.length}`);
+
+  // Optional sample adjustments for history UI / tests (idempotent by fixed ids)
+  const SAMPLE_ADJUSTMENTS = [
+    {
+      id: "adj_water_restock",
+      productId: "prod_water_500",
+      type: "restock",
+      quantity: 12,
+      reason: "seed restock",
+      stockBefore: 36,
+      stockAfter: 48,
+    },
+    {
+      id: "adj_candy_decrease",
+      productId: "prod_candy_low",
+      type: "decrease",
+      quantity: 2,
+      reason: "seed damage",
+      stockBefore: 5,
+      stockAfter: 3,
+    },
+  ] as const;
+
+  for (const a of SAMPLE_ADJUSTMENTS) {
+    const existing = await db
+      .select({ id: stockAdjustment.id })
+      .from(stockAdjustment)
+      .where(eq(stockAdjustment.id, a.id))
+      .limit(1);
+    if (existing[0]) continue;
+    await db.insert(stockAdjustment).values({
+      ...a,
+      adjustedBy: null,
+      adjustedAt: new Date(),
+    });
+  }
+  logger.info(`Stock adjustments seeded: ${SAMPLE_ADJUSTMENTS.length}`);
 }

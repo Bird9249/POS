@@ -104,6 +104,51 @@ export function deleteProduct(id: string) {
   return apiFetch<void>(`/api/products/${id}`, { method: "DELETE" });
 }
 
+export type StockAdjustType = "restock" | "increase" | "decrease";
+
+export type StockAdjustment = {
+  id: string;
+  productId: string;
+  type: StockAdjustType;
+  quantity: number;
+  reason: string;
+  adjustedBy: string | null;
+  stockBefore: number;
+  stockAfter: number;
+  adjustedAt: string;
+};
+
+export type CatalogSyncResponse = {
+  serverTime: string;
+  products: Product[];
+  categories: Category[];
+};
+
+export function syncCatalog(since?: string | null) {
+  const qs = since ? `?since=${encodeURIComponent(since)}` : "";
+  return apiFetch<CatalogSyncResponse>(`/api/products/sync${qs}`);
+}
+
+export function adjustStock(
+  productId: string,
+  body: { type: StockAdjustType; quantity: number; reason: string },
+) {
+  return apiFetch<{ product: Product; adjustment: StockAdjustment }>(
+    `/api/products/${productId}/stock-adjustments`,
+    {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(body),
+    },
+  );
+}
+
+export function listStockAdjustments(productId: string) {
+  return apiFetch<{ items: StockAdjustment[] }>(
+    `/api/products/${productId}/stock-adjustments`,
+  );
+}
+
 export async function uploadProductImage(file: File): Promise<string | null> {
   const key = `uploads/products/${Date.now()}-${file.name.replace(/\s+/g, "-")}`;
   try {

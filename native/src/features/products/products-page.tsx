@@ -32,10 +32,12 @@ import {
   type Product,
 } from "@/lib/api/catalog";
 import { flattenCursorPages } from "@/lib/list/infinite-virtual";
+import { useCatalogSync } from "@/lib/sync/use-catalog-sync";
 import { CategoriesPanel } from "./categories-panel";
 import { ProductFormSheet } from "./product-form-sheet";
 import { ProductVirtualList } from "./product-virtual-list";
 import { ProductsToolbar } from "./products-toolbar";
+import { StockAdjustSheet } from "./stock-adjust-sheet";
 import { copy } from "./ui-copy";
 
 const PAGE_SIZE = 20;
@@ -55,9 +57,11 @@ export function ProductsPage() {
   const [categoryId, setCategoryId] = useState("");
   const [formOpen, setFormOpen] = useState(false);
   const [editing, setEditing] = useState<Product | null>(null);
+  const [stockProduct, setStockProduct] = useState<Product | null>(null);
   const [deleteId, setDeleteId] = useState<string | null>(null);
   const [categoryAddSignal, setCategoryAddSignal] = useState(0);
   const qc = useQueryClient();
+  const catalogSync = useCatalogSync({ autoOnOnline: true });
 
   const categories = useQuery({
     queryKey: ["categories"],
@@ -117,6 +121,9 @@ export function ProductsPage() {
           categoryId={categoryId}
           onCategoryIdChange={setCategoryId}
           categories={categories.data?.items ?? []}
+          onSync={catalogSync.sync}
+          isSyncing={catalogSync.isSyncing}
+          syncDisabled={catalogSync.status === "offline"}
           onAdd={() => {
             if (tab === "products") {
               setEditing(null);
@@ -175,6 +182,16 @@ export function ProductsPage() {
         onOpenChange={setFormOpen}
         product={editing}
         canEditCost={canSeeCost}
+        onAdjustStock={(p) => {
+          setFormOpen(false);
+          setStockProduct(p);
+        }}
+      />
+
+      <StockAdjustSheet
+        open={Boolean(stockProduct)}
+        onOpenChange={(o) => !o && setStockProduct(null)}
+        product={stockProduct}
       />
 
       <AlertDialog

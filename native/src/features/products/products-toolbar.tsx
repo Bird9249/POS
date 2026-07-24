@@ -5,6 +5,7 @@ import {
   FolderTree,
   Package,
   Plus,
+  RefreshCw,
   ScanBarcode,
   Search,
   X,
@@ -12,6 +13,7 @@ import {
 import { toast } from "sonner";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
+import { Spinner } from "@/components/ui/spinner";
 import {
   InputGroup,
   InputGroupAddon,
@@ -34,6 +36,9 @@ type Props = {
   onCategoryIdChange: (value: string) => void;
   categories: Category[];
   onAdd: () => void;
+  onSync?: () => void;
+  isSyncing?: boolean;
+  syncDisabled?: boolean;
 };
 
 export function ProductsToolbar({
@@ -46,6 +51,9 @@ export function ProductsToolbar({
   onCategoryIdChange,
   categories,
   onAdd,
+  onSync,
+  isSyncing = false,
+  syncDisabled = false,
 }: Props) {
   const [scanOpen, setScanOpen] = useState(false);
 
@@ -68,6 +76,23 @@ export function ProductsToolbar({
             {copy.categories}
           </TabsTrigger>
         </TabsList>
+
+        {onSync ? (
+          <Button
+            type="button"
+            variant="outline"
+            className="h-11 shrink-0 gap-1.5 rounded-xl px-3"
+            disabled={syncDisabled || isSyncing}
+            onClick={onSync}
+            aria-label={copy.sync}
+            title={copy.sync}
+          >
+            {isSyncing ? <Spinner /> : <RefreshCw className="size-4" />}
+            <span className="hidden sm:inline">
+              {isSyncing ? copy.syncing : copy.sync}
+            </span>
+          </Button>
+        ) : null}
 
         <Button
           type="button"

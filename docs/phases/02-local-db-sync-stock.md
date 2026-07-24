@@ -13,31 +13,31 @@
 ---
 
 ## Backend (`webapp`)
-- [ ] `GET /api/products/sync?since=` — delta pull (รวม stock, updated_at)
-- [ ] Stock adjustment API: restock / increase / decrease + reason + audit fields
-- [ ] กฎ: ปรับลบแล้ว stock ไม่ติดลบ (ตามนโยบาย docs)
-- [ ] ประวัติ stock adjustment เก็บบน server
+- [x] `GET /api/products/sync?since=` — delta pull (รวม stock, updated_at)
+- [x] Stock adjustment API: restock / increase / decrease + reason + audit fields
+- [x] กฎ: ปรับลบแล้ว stock ไม่ติดลบ (ตามนโยบาย docs)
+- [x] ประวัติ stock adjustment เก็บบน server
 
 ## Frontend (`native`)
-- [ ] ติดตั้ง SQLite (Tauri plugin) + schema local:
+- [x] ติดตั้ง SQLite (Tauri plugin) + schema local:
   - `products_local`, `categories_local`, `meta`
-- [ ] Sync engine ขั้นแรก: **Pull only** catalog/stock ลงเครื่อง
-- [ ] หน้า Stock Adjustment (Admin, online)
-- [ ] Low Stock badge/list จากข้อมูล local หรือ API
-- [ ] ปุ่ม Sync แมนนวล + sync ตอนเปิดแอปเมื่อออนไลน์
+- [x] Sync engine ขั้นแรก: **Pull only** catalog/stock ลงเครื่อง
+- [x] หน้า Stock Adjustment (Admin, online)
+- [x] Low Stock badge/list จากข้อมูล local หรือ API
+- [x] ปุ่ม Sync แมนนวล + sync ตอนเปิดแอปเมื่อออนไลน์
 
 ---
 
 ## Test / Seed
 
 ### เขียน
-- [ ] **Seed** — ยืนยันใน seed ว่ามีสินค้า low-stock และสินค้าสต็อกปกติ (จาก Phase 1)
-- [ ] **Seed stock movements (optional)** — adjustment ตัวอย่าง 1–2 รายการสำหรับทดสอบประวัติ
-- [ ] **Test sync API** — หลัง seed, `GET /api/products/sync` ได้ครบ; เรียกใหม่ด้วย `since=` ได้เฉพาะที่เปลี่ยน
-- [ ] **Test stock adjust** — restock / increase / decrease ถูกต้อง; decrease เกินสต็อกแล้วถูกปฏิเสธ
-- [ ] **Test low stock rule** — unit: `stock_qty < min_stock` → flagged
-- [ ] **Test native local DB (unit/integration)** — upsert จาก sync payload แล้ว query ตาม barcode ได้
-- [ ] **Test pull idempotent** — sync สองครั้งแล้วแถวใน SQLite ไม่ซ้ำ
+- [x] **Seed** — ยืนยันใน seed ว่ามีสินค้า low-stock และสินค้าสต็อกปกติ (จาก Phase 1)
+- [x] **Seed stock movements (optional)** — adjustment ตัวอย่าง 1–2 รายการสำหรับทดสอบประวัติ
+- [x] **Test sync API** — หลัง seed, `GET /api/products/sync` ได้ครบ; เรียกใหม่ด้วย `since=` ได้เฉพาะที่เปลี่ยน
+- [x] **Test stock adjust** — restock / increase / decrease ถูกต้อง; decrease เกินสต็อกแล้วถูกปฏิเสธ
+- [x] **Test low stock rule** — unit: `stock_qty < min_stock` → flagged
+- [x] **Test native local DB (unit/integration)** — upsert จาก sync payload แล้ว query ตาม barcode ได้
+- [x] **Test pull idempotent** — sync สองครั้งแล้วแถวใน SQLite ไม่ซ้ำ
 
 ตำแหน่งไฟล์แนะนำ:
 ```text

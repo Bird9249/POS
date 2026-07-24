@@ -1,6 +1,14 @@
-import { integer, pgTable, text, timestamp, uniqueIndex } from "drizzle-orm/pg-core";
+import {
+  integer,
+  pgTable,
+  text,
+  timestamp,
+  uniqueIndex,
+  index,
+} from "drizzle-orm/pg-core";
 import { sql } from "drizzle-orm";
 import { nanoid } from "nanoid";
+import { user } from "./auth";
 
 export const category = pgTable("category", {
   id: text("id")
@@ -59,5 +67,36 @@ export const product = pgTable(
     uniqueIndex("product_barcode_unique")
       .on(t.barcode)
       .where(sql`${t.barcode} is not null AND ${t.deletedAt} is null`),
+  ],
+);
+
+/** Stock movement ledger (restock / increase / decrease). */
+export const stockAdjustment = pgTable(
+  "stock_adjustment",
+  {
+    id: text("id")
+      .primaryKey()
+      .$defaultFn(() => nanoid()),
+    productId: text("product_id")
+      .notNull()
+      .references(() => product.id, { onDelete: "restrict" }),
+    type: text("type").notNull(), // restock | increase | decrease
+    quantity: integer("quantity").notNull(),
+    reason: text("reason").notNull(),
+    adjustedBy: text("adjusted_by").references(() => user.id, {
+      onDelete: "set null",
+    }),
+    stockBefore: integer("stock_before").notNull(),
+    stockAfter: integer("stock_after").notNull(),
+    adjustedAt: timestamp("adjusted_at", {
+      withTimezone: true,
+      mode: "date",
+    })
+      .notNull()
+      .$defaultFn(() => new Date()),
+  },
+  (t) => [
+    index("stock_adjustment_by_product").on(t.productId, t.adjustedAt),
+    index("stock_adjustment_by_time").on(t.adjustedAt),
   ],
 );

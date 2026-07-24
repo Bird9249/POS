@@ -21,6 +21,11 @@
       "csp": null
     }
   },
+  "plugins": {
+    "sql": {
+      "preload": ["sqlite:pos.db"]
+    }
+  },
   "bundle": {
     "active": true,
     "targets": "all",

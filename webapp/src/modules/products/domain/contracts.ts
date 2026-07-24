@@ -54,6 +54,37 @@ export type ListProductsQueryDTO = z.infer<typeof ListProductsQuerySchema>;
 
 export const IdParamSchema = z.object({ id: z.string().min(1) });
 
+export const SyncProductsQuerySchema = z.object({
+  since: z.coerce.date().optional(),
+});
+export type SyncProductsQueryDTO = z.infer<typeof SyncProductsQuerySchema>;
+
+export const StockAdjustTypeSchema = z.enum([
+  "restock",
+  "increase",
+  "decrease",
+]);
+
+export const AdjustStockSchema = z.object({
+  type: StockAdjustTypeSchema,
+  quantity: z.coerce.number().int().positive(),
+  reason: z.string().trim().min(1).max(500),
+});
+export type AdjustStockDTO = z.infer<typeof AdjustStockSchema>;
+
+export const StockAdjustmentSchema = z.object({
+  id: z.string(),
+  productId: z.string(),
+  type: StockAdjustTypeSchema,
+  quantity: z.number().int(),
+  reason: z.string(),
+  adjustedBy: z.string().nullable(),
+  stockBefore: z.number().int(),
+  stockAfter: z.number().int(),
+  adjustedAt: z.coerce.date(),
+});
+export type StockAdjustmentDTO = z.infer<typeof StockAdjustmentSchema>;
+
 export type ProductRow = {
   id: string;
   name: string;
