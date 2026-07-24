@@ -1,6 +1,7 @@
 import { useMemo, useState, type ReactNode } from "react";
 import { Link, useNavigate, useRouterState } from "@tanstack/react-router";
 import { Menu, LogOut } from "lucide-react";
+import { toast } from "sonner";
 
 import { AppLogo } from "@/components/app-logo";
 import { OnlinePill } from "@/components/online-pill";
@@ -62,6 +63,7 @@ export function AppShell({ children }: { children: ReactNode }) {
     try {
       await authClient.signOut();
       setSignOutOpen(false);
+      toast.success("ອອກຈາກລະບົບສຳເລັດ");
       await navigate({ to: "/login" });
     } finally {
       setSigningOut(false);

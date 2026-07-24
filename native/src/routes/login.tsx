@@ -27,6 +27,7 @@ import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { motion } from "motion/react";
 import { useState } from "react";
 import { Controller, useForm } from "react-hook-form";
+import { toast } from "sonner";
 
 export const Route = createFileRoute("/login")({
   component: LoginPage,
@@ -49,18 +50,25 @@ function LoginPage() {
     try {
       const { error: signError } = await authClient.signIn.email(values);
       if (signError) {
-        setAuthError(signError.message || "ເຂົ້າລະບົບບໍ່ສຳເລັດ");
+        const msg = signError.message || "ເຂົ້າລະບົບບໍ່ສຳເລັດ";
+        setAuthError(msg);
+        toast.error(msg);
         return;
       }
       // Warm session cache so root guard sees the cookie before leaving /login
       const { data: session } = await authClient.getSession();
       if (!session?.session) {
-        setAuthError("ເຂົ້າລະບົບສຳເລັດແຕ່ບໍ່ມີເຊັດຊັນ — ລອງໃໝ່");
+        const msg = "ເຂົ້າລະບົບສຳເລັດແຕ່ບໍ່ມີເຊັດຊັນ — ລອງໃໝ່";
+        setAuthError(msg);
+        toast.error(msg);
         return;
       }
+      toast.success("ເຂົ້າລະບົບສຳເລັດ");
       await navigate({ to: "/checkout" });
     } catch (err) {
-      setAuthError(err instanceof Error ? err.message : "ເຂົ້າລະບົບບໍ່ສຳເລັດ");
+      const msg = err instanceof Error ? err.message : "ເຂົ້າລະບົບບໍ່ສຳເລັດ";
+      setAuthError(msg);
+      toast.error(msg);
     }
   }
 

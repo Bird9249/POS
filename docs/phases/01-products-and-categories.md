@@ -13,38 +13,38 @@
 ---
 
 ## Backend (`webapp`)
-- [ ] Schema: `products`, `categories` (soft delete สินค้า)
-- [ ] ฟิลด์: name, image, barcode, cost_price, sell_price, category_id, stock_qty, min_stock
-- [ ] API:
+- [x] Schema: `products`, `categories` (soft delete สินค้า)
+- [x] ฟิลด์: name, image, barcode, cost_price, sell_price, category_id, stock_qty, min_stock
+- [x] API:
   - Categories CRUD
   - Products CRUD
   - List/search (name, barcode, sku) แบบ **cursor pagination**: `{ items, nextCursor }`
-- [ ] `barcode` unique (เมื่อมีค่า)
-- [ ] Response สำหรับ Cashier **ไม่มี** `cost_price` (บังคับที่ API)
+- [x] `barcode` unique (เมื่อมีค่า)
+- [x] Response สำหรับ Cashier **ไม่มี** `cost_price` (บังคับที่ API)
 
 ## Frontend (`native`)
-- [ ] หน้า Categories (Admin)
-- [ ] หน้า Products list / create / edit (Admin)
-- [ ] Products list ยาว: **`useInfiniteQuery` + TanStack Virtual** (ไม่ render ทั้งก้อน)
-- [ ] เปิด/ปิดฟอร์มหรือ sheet ด้วย **Motion** (ไม่เขียน CSS transition เอง)
-- [ ] อัปโหลดรูป (online) ผ่าน upload API ที่มีอยู่ถ้าใช้ได้
-- [ ] แสดง/ซ่อนราคาทุนตาม Role
+- [x] หน้า Categories (Admin)
+- [x] หน้า Products list / create / edit (Admin)
+- [x] Products list ยาว: **`useInfiniteQuery` + TanStack Virtual** (ไม่ render ทั้งก้อน)
+- [x] เปิด/ปิดฟอร์มหรือ sheet ด้วย **Motion** (ไม่เขียน CSS transition เอง)
+- [x] อัปโหลดรูป (online) ผ่าน upload API ที่มีอยู่ถ้าใช้ได้
+- [x] แสดง/ซ่อนราคาทุนตาม Role
 
 ---
 
 ## Test / Seed
 
 ### เขียน
-- [ ] **Seed catalog** ใน `seed-pos.ts` (หรือ `seed-catalog.ts` ที่ถูกเรียกจาก seed หลัก):
+- [x] **Seed catalog** ใน `seed-pos.ts` (หรือ `seed-catalog.ts` ที่ถูกเรียกจาก seed หลัก):
   - หมวดหมู่ตัวอย่าง ≥ 2
   - สินค้าตัวอย่าง ≥ 5 (มี barcode, cost_price, sell_price, stock_qty, min_stock)
   - อย่างน้อย 1 ชิ้นที่ `stock_qty < min_stock` (เตรียม Phase 2)
-- [ ] **Test categories API** — create/list/update/delete (admin)
-- [ ] **Test products API** — CRUD + soft delete; barcode ซ้ำแล้วได้ error
-- [ ] **Test cursor page** — หน้าแรกมี `nextCursor`; หน้าถัดไปไม่ซ้ำ id; หน้าสุดท้าย `nextCursor = null`
-- [ ] **Test search** — ค้นด้วยชื่อ / barcode เจอรายการที่ seed
-- [ ] **Test cost_price hidden** — login เป็น cashier แล้ว GET product **ไม่มี** field `cost_price`
-- [ ] **Test permission** — cashier เรียก POST/PATCH product ได้ 403
+- [x] **Test categories API** — create/list/update/delete (admin)
+- [x] **Test products API** — CRUD + soft delete; barcode ซ้ำแล้วได้ error
+- [x] **Test cursor page** — หน้าแรกมี `nextCursor`; หน้าถัดไปไม่ซ้ำ id; หน้าสุดท้าย `nextCursor = null`
+- [x] **Test search** — ค้นด้วยชื่อ / barcode เจอรายการที่ seed
+- [x] **Test cost_price hidden** — login เป็น cashier แล้ว GET product **ไม่มี** field `cost_price`
+- [x] **Test permission** — cashier เรียก POST/PATCH product ได้ 403
 
 ตำแหน่งไฟล์แนะนำ:
 ```text

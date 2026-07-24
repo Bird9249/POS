@@ -7,6 +7,7 @@ import { createUserService } from "@/modules/users/domain/service/create";
 import { db } from "@/server/platform/db/client";
 import { user } from "@/server/platform/db/schema/auth";
 import { logger } from "@/server/platform/observability/logger";
+import { seedCatalog } from "./seed-catalog";
 
 const SEED_USERS = [
   {
@@ -60,6 +61,8 @@ async function seedPos() {
     for (const u of SEED_USERS) {
       await ensureUser(u);
     }
+
+    await seedCatalog(db);
 
     logger.info("POS seed completed successfully");
     process.exit(0);
