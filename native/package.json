@@ -8,6 +8,8 @@
     "build": "tsc && vite build",
     "preview": "vite preview",
     "tauri": "tauri",
+    "desktop:dev": "tauri dev",
+    "desktop:build": "tauri build",
     "android:init": "tauri android init",
     "android:dev": "adb reverse tcp:80 tcp:1420 && adb reverse tcp:1420 tcp:1420 && adb reverse tcp:1421 tcp:1421 && tauri android dev --host 127.0.0.1",
     "android:dev:wifi": "tauri android dev --host",

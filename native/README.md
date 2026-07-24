@@ -28,22 +28,27 @@ Android project is already generated under `src-tauri/gen/android`.
 ## Develop
 
 ```bash
+# Desktop (Linux / macOS / Windows) — แนะนำตอนพัฒนา UI
+bun run desktop:dev
+
 # Android emulator / device
 bun run android:dev
 
-# Desktop (optional)
-bun run tauri dev
-
-# Frontend only (Vite)
+# Frontend only (Vite ในเบราว์เซอร์ — ไม่มี Tauri APIs ครบ)
 bun run dev
 ```
+
+`desktop:dev` จะรัน Vite ที่ `http://localhost:1420` แล้วเปิดหน้าต่าง Tauri desktop
 
 ## Build
 
 ```bash
+# Desktop
+bun run desktop:build
+
+# Android
 bun run android:build
 ```
-
 ## UI (shadcn)
 
 [shadcn/ui](https://ui.shadcn.com/) is set up (Radix + Nova, Tailwind v4).
