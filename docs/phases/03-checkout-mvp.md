@@ -14,33 +14,33 @@
 ---
 
 ## Frontend (`native`)
-- [ ] หน้า Checkout mobile-first (ค้นหา + ตะกร้า + สรุปยอด)
-- [ ] Search จาก SQLite: ชื่อ / รหัส / barcode
-- [ ] ผลค้นหาที่ยาวได้: **TanStack Virtual** (อ่าน local ก็ virtualize)
-- [ ] รองรับอินพุตสแกนเนอร์ (คีย์บอร์ด wedge) ที่ช่องค้นหา
-- [ ] Cart: เพิ่ม / ลบ / เปลี่ยนจำนวน
-- [ ] ส่วนลดรายการ: `%` หรือจำนวนเงิน (กีบ)
-- [ ] ส่วนลดทั้งบิล (ถ้ารองรับในรอบนี้)
-- [ ] คำนวณยอดตามสูตรใน docs 01
-- [ ] ชำระ **เงินสด**: กรอกเงินรับ → คำนวณทอน → กันยอดไม่พอ
-- [ ] ชำระ **โอน**: แสดง Static QR จาก config ที่ cache (ถ้ายังไม่มี config ใช้ placeholder + ดึงใน Phase 5)
-- [ ] ยืนยันโอนแบบ Manual (`confirmed_by_staff`)
-- [ ] Sheet ชำระ / ส่วนลด / สำเร็จ: เปิด-ปิดด้วย **Motion**
+- [x] หน้า Checkout mobile-first (ค้นหา + ตะกร้า + สรุปยอด)
+- [x] Search จาก SQLite: ชื่อ / รหัส / barcode
+- [x] ผลค้นหาที่ยาวได้: **TanStack Virtual** (อ่าน local ก็ virtualize)
+- [x] รองรับอินพุตสแกนเนอร์ (คีย์บอร์ด wedge) ที่ช่องค้นหา
+- [x] Cart: เพิ่ม / ลบ / เปลี่ยนจำนวน
+- [x] ส่วนลดรายการ: `%` หรือจำนวนเงิน (กีบ)
+- [x] ส่วนลดทั้งบิล (ถ้ารองรับในรอบนี้)
+- [x] คำนวณยอดตามสูตรใน docs 01
+- [x] ชำระ **เงินสด**: กรอกเงินรับ → คำนวณทอน → กันยอดไม่พอ
+- [x] ชำระ **โอน**: แสดง Static QR จาก config ที่ cache (ถ้ายังไม่มี config ใช้ placeholder + ดึงใน Phase 5)
+- [x] ยืนยันโอนแบบ Manual (`confirmed_by_staff`)
+- [x] Sheet ชำระ / ส่วนลด / สำเร็จ: เปิด-ปิดด้วย **Motion**
 
 ## Backend (`webapp`)
-- [ ] (เตรียม) draft contract `POST /api/sales` + `client_sale_id` — implement เต็มใน Phase 4
+- [x] (เตรียม) draft contract `POST /api/sales` + `client_sale_id` — implement เต็มใน Phase 4
 
 ---
 
 ## Test / Seed
 
 ### เขียน
-- [ ] **Seed** — ใช้ catalog จาก Phase 1–2; เพิ่มสินค้าที่รู้ barcode ชัดเจนสำหรับเทสสแกน (เช่น `BARCODE-001`)
-- [ ] **Test cart math (unit)** — ยอดรายการ / ส่วนลด `%` / ส่วนลดเงิน / ส่วนลดบิล / ยอดไม่ติดลบ
-- [ ] **Test cash change (unit)** — ทอนถูกต้อง; เงินรับ < ยอด → invalid
-- [ ] **Test local search (unit)** — ค้นชื่อ/barcode จาก fixture SQLite หรือ in-memory list
-- [ ] **Test transfer confirmation (unit)** — ต้องมี `confirmed_by_staff` ก่อนถือว่าชำระโอนสำเร็จ
-- [ ] **(Optional) contract test** — schema ของ draft `POST /api/sales` validate ได้
+- [x] **Seed** — ใช้ catalog จาก Phase 1–2; เพิ่มสินค้าที่รู้ barcode ชัดเจนสำหรับเทสสแกน (เช่น `BARCODE-001`)
+- [x] **Test cart math (unit)** — ยอดรายการ / ส่วนลด `%` / ส่วนลดเงิน / ส่วนลดบิล / ยอดไม่ติดลบ
+- [x] **Test cash change (unit)** — ทอนถูกต้อง; เงินรับ < ยอด → invalid
+- [x] **Test local search (unit)** — ค้นชื่อ/barcode จาก fixture SQLite หรือ in-memory list
+- [x] **Test transfer confirmation (unit)** — ต้องมี `confirmed_by_staff` ก่อนถือว่าชำระโอนสำเร็จ
+- [x] **(Optional) contract test** — schema ของ draft `POST /api/sales` validate ได้
 
 ตำแหน่งไฟล์แนะนำ:
 ```text

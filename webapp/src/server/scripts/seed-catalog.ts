@@ -75,6 +75,17 @@ const PRODUCTS = [
     stockQty: 3,
     minStock: 15,
   },
+  {
+    id: "prod_scan_test",
+    name: "ສິນຄ້າທົດສອບສະແກນ",
+    barcode: "BARCODE-001",
+    sku: "SCAN-001",
+    categoryId: "cat_snacks",
+    costPrice: 1000,
+    sellPrice: 3000,
+    stockQty: 99,
+    minStock: 5,
+  },
 ] as const;
 
 export async function seedCatalog(db: DbClient) {

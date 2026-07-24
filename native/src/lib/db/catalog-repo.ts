@@ -169,6 +169,48 @@ export async function findProductByBarcode(db: SqlDb, barcode: string) {
   return rows[0] ?? null;
 }
 
+/**
+ * Search local catalog by name / barcode / sku (case-insensitive substring).
+ * Empty query returns recent products (by name).
+ */
+export async function searchLocalProducts(
+  db: SqlDb,
+  q: string,
+  opts?: { limit?: number },
+) {
+  const limit = Math.min(Math.max(opts?.limit ?? 40, 1), 100);
+  const trimmed = q.trim();
+  if (!trimmed) {
+    return db.select<LocalProduct>(
+      `SELECT * FROM products_local
+       WHERE deleted_at IS NULL
+       ORDER BY name COLLATE NOCASE ASC
+       LIMIT ?`,
+      [limit],
+    );
+  }
+  const like = `%${trimmed}%`;
+  return db.select<LocalProduct>(
+    `SELECT * FROM products_local
+     WHERE deleted_at IS NULL
+       AND (
+         name LIKE ? COLLATE NOCASE
+         OR IFNULL(barcode, '') LIKE ? COLLATE NOCASE
+         OR IFNULL(sku, '') LIKE ? COLLATE NOCASE
+       )
+     ORDER BY
+       CASE
+         WHEN barcode = ? THEN 0
+         WHEN sku = ? THEN 1
+         WHEN name LIKE ? COLLATE NOCASE THEN 2
+         ELSE 3
+       END,
+       name COLLATE NOCASE ASC
+     LIMIT ?`,
+    [like, like, like, trimmed, trimmed, `${trimmed}%`, limit],
+  );
+}
+
 export async function countLocalProducts(db: SqlDb) {
   const rows = await db.select<{ n: number }>(
     `SELECT COUNT(*) as n FROM products_local WHERE deleted_at IS NULL`,

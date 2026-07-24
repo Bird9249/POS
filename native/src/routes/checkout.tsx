@@ -1,15 +1,10 @@
 import { createFileRoute } from "@tanstack/react-router";
-import { PlaceholderPage } from "@/components/placeholder-page";
+import { CheckoutPage } from "@/features/checkout/checkout-page";
 
 export const Route = createFileRoute("/checkout")({
   component: Page,
 });
 
 function Page() {
-  return (
-    <PlaceholderPage
-      title="ຂາຍ"
-      description="ໜ້າຂາຍ — ຈະພັດທະນາໃນ Phase 3"
-    />
-  );
+  return <CheckoutPage />;
 }

@@ -149,28 +149,4 @@ export function listStockAdjustments(productId: string) {
   );
 }
 
-export async function uploadProductImage(file: File): Promise<string | null> {
-  const key = `uploads/products/${Date.now()}-${file.name.replace(/\s+/g, "-")}`;
-  try {
-    const presign = await apiFetch<{ uploadUrl: string; key: string }>(
-      "/api/upload/presign",
-      {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          key,
-          contentType: file.type || "image/jpeg",
-        }),
-      },
-    );
-    const put = await fetch(presign.uploadUrl, {
-      method: "PUT",
-      headers: { "Content-Type": file.type || "image/jpeg" },
-      body: file,
-    });
-    if (!put.ok) return null;
-    return presign.key;
-  } catch {
-    return null;
-  }
-}
+export { uploadProductImage } from "./upload";

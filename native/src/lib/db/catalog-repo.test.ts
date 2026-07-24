@@ -7,6 +7,7 @@ import {
   countLocalProducts,
   findProductByBarcode,
   isLocalLowStock,
+  searchLocalProducts,
   upsertProducts,
 } from "./catalog-repo";
 
@@ -112,5 +113,40 @@ describe("local catalog SQLite", () => {
     ]);
     expect(await findProductByBarcode(db, "GONE")).toBeNull();
     expect(await countLocalProducts(db)).toBe(0);
+  });
+
+  test("search by name / barcode / sku", async () => {
+    const db = openBunSqlite();
+    await upsertProducts(db, [
+      {
+        id: "a",
+        name: "ນ້ຳດື່ມ",
+        barcode: "BARCODE-001",
+        sku: "WTR-500",
+        sellPrice: 5000,
+        stockQty: 10,
+        createdAt: "2026-07-01T00:00:00.000Z",
+        updatedAt: "2026-07-01T00:00:00.000Z",
+      },
+      {
+        id: "b",
+        name: "ໂຄລາ",
+        barcode: "8850",
+        sku: "COLA",
+        sellPrice: 8000,
+        stockQty: 5,
+        createdAt: "2026-07-01T00:00:00.000Z",
+        updatedAt: "2026-07-01T00:00:00.000Z",
+      },
+    ]);
+
+    const byBarcode = await searchLocalProducts(db, "BARCODE-001");
+    expect(byBarcode.map((p) => p.id)).toEqual(["a"]);
+
+    const byName = await searchLocalProducts(db, "ນ້ຳ");
+    expect(byName.some((p) => p.id === "a")).toBe(true);
+
+    const bySku = await searchLocalProducts(db, "cola");
+    expect(bySku.map((p) => p.id)).toEqual(["b"]);
   });
 });
