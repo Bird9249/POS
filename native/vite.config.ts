@@ -45,5 +45,13 @@ export default defineConfig(async () => ({
       // 3. tell Vite to ignore watching `src-tauri`
       ignored: ["**/src-tauri/**"],
     },
+    // Proxy /api to webapp so auth cookies are same-origin in desktop/mobile dev
+    proxy: {
+      "/api": {
+        // @ts-expect-error process is a nodejs global
+        target: process.env.VITE_API_PROXY_TARGET || "http://localhost:3000",
+        changeOrigin: true,
+      },
+    },
   },
 }));

@@ -34,7 +34,8 @@
 | Big numbers | ยอดสุทธิ / เงินทอน ใช้ตัวอักษรใหญ่กว่าข้อความทั่วไป |
 | Progressive disclosure | ส่วนลด, ปรับจำนวน, QR โอน เปิดเมื่อต้องใช้ ไม่กองในหน้าแรกทั้งหมด |
 | Offline never blocks sale | ตอน offline ปิดเฉพาะงาน online-only — Checkout ยังใช้ได้ |
-| System UI | ใช้ shadcn/ui + Tailwind ใน `native` ไม่สร้าง design system ใหม่ซ้อนอีกชั้น |
+| System UI | **UI ทุกจุดใช้ component จาก shadcn/ui** ใน `native/src/components/ui/` (Button, Input, Card, Badge, Alert, Sheet, …) — ห้ามใช้ `<button>`/`<input>`/`<label>` ดิบหรือ pill แบบ custom แทน; Tailwind เฉพาะจัด layout/spacing |
+| Forms | **React Hook Form + Zod** + `zodResolver` — ฟิลด์ใช้ `<Controller />` กับ `<Field />`, `<FieldLabel />`, `<FieldError />` ตาม [shadcn RHF guide](https://ui.shadcn.com/docs/forms/react-hook-form); schema แยกไฟล์ (เช่น `features/**/\*-schema.ts`); ข้อความ validate เป็นภาษาลาว |
 | Long lists | Infinite scroll แบบ cursor + **TanStack Query** + **TanStack Virtual** |
 | Motion | Animation/transition ใช้ **Motion** ไม่เขียน CSS motion เองเป็นหลัก |
 
@@ -129,7 +130,7 @@ API (cursor) → useInfiniteQuery → flat items → useVirtualizer → แถ�
 | Muted | ข้อมูลรอง, disabled |
 
 ### ภาษา UI
-- ข้อความ UI ใช้ **ลาว** เป็นหลัก (ตามแอป starter ปัจจุบัน) หรือคู่ลาว/ไทยตามที่ทีมล็อกภายหลัง
+- ข้อความที่ผู้ใช้เห็น (ป้าย, ปุ่ม, ข้อความ error, aria-label) ใช้ **ภาษาลาว** เป็นหลัก — ไม่ใส่ข้อความอังกฤษใน UI ยกเว้นชื่อแบรนด์/อีเมล demo
 - ตัวเลขเงิน: **กีบ** จัดรูปแบบคั่นหลักพัน + tabular figures
 
 ### ไม่ทำใน UI ขาย

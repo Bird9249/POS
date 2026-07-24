@@ -77,7 +77,10 @@
     "lint": "biome check .",
     "rbac:sync": "bun run src/modules/roles/domain/scripts/sync.ts",
     "start": "NODE_ENV=production bun index.ts",
-    "worker": "WORKER_PORT=3001 bun run src/server/worker.ts"
+    "worker": "WORKER_PORT=3001 bun run src/server/worker.ts",
+    "test": "bun test",
+    "db:seed": "bun run src/server/scripts/seed-pos.ts",
+    "seed:pos": "bun run src/server/scripts/seed-pos.ts"
   },
   "type": "module",
   "version": "0.1.0"

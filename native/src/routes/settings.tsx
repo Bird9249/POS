@@ -1,13 +1,5 @@
 import { createFileRoute } from "@tanstack/react-router";
-import { Settings } from "lucide-react";
-
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card";
+import { PlaceholderPage } from "@/components/placeholder-page";
 
 export const Route = createFileRoute("/settings")({
   component: Page,
@@ -15,18 +7,9 @@ export const Route = createFileRoute("/settings")({
 
 function Page() {
   return (
-    <Card>
-      <CardHeader>
-        <CardTitle className="flex items-center gap-2">
-          <Settings className="size-5" />
-          ຕັ້ງຄ່າ
-        </CardTitle>
-        <CardDescription>ໜ້າຕົວຢ່າງສຳລັບ TanStack Router</CardDescription>
-      </CardHeader>
-      <CardContent className="text-muted-foreground text-sm">
-        ເສັ້ນທາງນີ້ແມ່ນ{" "}
-        <code className="bg-muted rounded px-1.5 py-0.5">/settings</code>
-      </CardContent>
-    </Card>
+    <PlaceholderPage
+      title="ຕັ້ງຄ່າ"
+      description="ຕັ້ງຄ່າຮ້ານ / ໃບເສຣັດ — ຈະພັດທະນາໃນ Phase 5"
+    />
   );
 }

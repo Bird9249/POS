@@ -4,12 +4,15 @@ import { existsSync } from "node:fs";
 import { Elysia } from "elysia";
 import { createRestRoutes } from "../../api/rest";
 import { serverContext } from "./context";
+import { parseCorsOrigins } from "./cors-origins";
 import { createHttpLogger } from "./middleware/logger";
 
 export function createServer() {
+  const allowedOrigins = parseCorsOrigins(process.env.CORS_ORIGIN);
+
   const app = new Elysia({ prefix: "/api" }).use(
     cors({
-      origin: process.env.CORS_ORIGIN || "",
+      origin: allowedOrigins,
       allowedHeaders: ["Content-Type", "Authorization"],
       methods: ["GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"],
       exposeHeaders: ["Content-Type", "Authorization"],

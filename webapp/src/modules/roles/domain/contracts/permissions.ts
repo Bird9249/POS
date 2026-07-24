@@ -9,6 +9,22 @@ export const Permissions = {
   audit: {
     read: "audit:read",
   },
+  sales: {
+    create: "sales:create",
+    read: "sales:read",
+    read_all: "sales:read_all",
+  },
+  products: {
+    read: "products:read",
+    manage: "products:manage",
+    cost_read: "products:cost_read",
+  },
+  reports: {
+    read: "reports:read",
+  },
+  settings: {
+    manage: "settings:manage",
+  },
 } as const;
 
 export const ALL_PERMISSIONS = Object.entries(Permissions).flatMap(
@@ -18,19 +34,25 @@ export const ALL_PERMISSIONS = Object.entries(Permissions).flatMap(
 
 export type PermissionId = (typeof ALL_PERMISSIONS)[number]["id"];
 
-// Human-friendly labels for rendering in UI
 export const RESOURCE_LABELS: Record<string, string> = {
-  users: "ຜູ້ໃຊ້",
-  audit: "ບັນທຶກການກວດກາ",
+  users: "Users",
+  audit: "Audit",
+  sales: "Sales",
+  products: "Products",
+  reports: "Reports",
+  settings: "Settings",
 };
 
 export const ACTION_LABELS: Record<string, string> = {
-  create: "ສ້າງ",
-  read: "ເບິ່ງ",
-  update: "ແກ້ໄຂ",
-  delete: "ລຶບ",
-  ban: "ລະງັບ",
-  all: "ທັງໝົດ",
+  create: "Create",
+  read: "Read",
+  read_all: "Read all",
+  update: "Update",
+  delete: "Delete",
+  ban: "Ban",
+  manage: "Manage",
+  cost_read: "View cost",
+  all: "All",
 };
 
 export function getResourceLabel(resource: string): string {

@@ -49,6 +49,11 @@ Phase 7  Harden Offline, RBAC, Polish
 
 ## มาตรฐาน Frontend UI (ใช้ร่วมทุก phase)
 
+### ฟอร์ม (React Hook Form + Zod)
+- ใช้ `useForm` + `zodResolver` + schema Zod (ข้อความ error ภาษาลาว)
+- UI ฟิลด์ตาม shadcn: `Controller` + `Field` / `FieldLabel` / `FieldError` / `FieldGroup` (`native/src/components/ui/field.tsx`)
+- Error จาก API (ไม่ใช่ validation) แสดงด้วย `Alert` แยกจาก field errors
+
 ### Infinite scroll + cursor pagination
 รายการที่คาดว่ายาว (สินค้า, ประวัติขาย, รายงานรายการ, low stock ฯลฯ) **ต้อง** ใช้คู่กัน:
 

@@ -1,22 +1,23 @@
 import {
-  Home as HomeIcon,
-  LayoutDashboard,
+  ClipboardList,
+  Package,
   Settings,
-  Users,
+  ShoppingCart,
   type LucideIcon,
 } from "lucide-react";
+import type { PosPath } from "@/features/auth/nav-access";
 
-export type AppPath = "/" | "/dashboard" | "/users" | "/settings";
+export type AppPath = PosPath | "/login";
 
 export type NavItem = {
-  to: AppPath;
+  to: PosPath;
   label: string;
   icon: LucideIcon;
 };
 
-export const navItems: NavItem[] = [
-  { to: "/", label: "ໜ້າຫຼັກ", icon: HomeIcon },
-  { to: "/dashboard", label: "ແດຊບອດ", icon: LayoutDashboard },
-  { to: "/users", label: "ຜູ້ໃຊ້", icon: Users },
-  { to: "/settings", label: "ຕັ້ງຄ່າ", icon: Settings },
-];
+export const navIcons: Record<PosPath, LucideIcon> = {
+  "/checkout": ShoppingCart,
+  "/products": Package,
+  "/reports": ClipboardList,
+  "/settings": Settings,
+};
