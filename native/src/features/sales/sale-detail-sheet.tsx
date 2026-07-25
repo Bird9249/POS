@@ -1,5 +1,7 @@
 import { useQuery } from "@tanstack/react-query";
 import { motion } from "motion/react";
+import { Printer } from "lucide-react";
+import { useState } from "react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import {
@@ -11,6 +13,8 @@ import {
 } from "@/components/ui/sheet";
 import { Spinner } from "@/components/ui/spinner";
 import { salesCopy as copy } from "@/features/checkout/ui-copy-sales";
+import { ReceiptPreviewSheet } from "@/features/receipt/receipt-preview-sheet";
+import { receiptCopy } from "@/features/receipt/ui-copy";
 import { resolveFileSrc } from "@/lib/api/file-url";
 import { getLocalDb } from "@/lib/db/client";
 import type {
@@ -18,6 +22,7 @@ import type {
   SalesOutboxRow,
 } from "@/lib/db/sales-outbox-repo";
 import { formatKip } from "@/lib/format-kip";
+import { loadReceiptSettings } from "@/lib/sync/pull-settings";
 import { cn } from "@/lib/utils";
 import { loadSaleDetail } from "./load-sale-detail";
 
@@ -54,6 +59,7 @@ function statusBadge(status: SalesOutboxRow["status"]) {
 }
 
 export function SaleDetailSheet({ open, onOpenChange, sale, online }: Props) {
+  const [receiptOpen, setReceiptOpen] = useState(false);
   const detail = useQuery({
     queryKey: ["sale-detail", sale?.client_sale_id, online],
     queryFn: async () => {
@@ -62,6 +68,12 @@ export function SaleDetailSheet({ open, onOpenChange, sale, online }: Props) {
       return loadSaleDetail(db, sale, { online });
     },
     enabled: open && !!sale,
+  });
+  const store = useQuery({
+    queryKey: ["receipt-settings-sale-detail"],
+    queryFn: async () => loadReceiptSettings(await getLocalDb()),
+    enabled: open,
+    staleTime: 30_000,
   });
 
   const badge = sale ? statusBadge(sale.status) : null;
@@ -86,6 +98,7 @@ export function SaleDetailSheet({ open, onOpenChange, sale, online }: Props) {
     : 0;
 
   return (
+    <>
     <Sheet open={open} onOpenChange={onOpenChange}>
       <SheetContent
         side="bottom"
@@ -232,7 +245,16 @@ export function SaleDetailSheet({ open, onOpenChange, sale, online }: Props) {
           )}
         </div>
 
-        <SheetFooter className="bg-background/95 shrink-0 border-t px-4 pt-3 pb-[max(1rem,env(safe-area-inset-bottom))] backdrop-blur">
+        <SheetFooter className="bg-background/95 shrink-0 gap-2 border-t px-4 pt-3 pb-[max(1rem,env(safe-area-inset-bottom))] backdrop-blur sm:flex-col">
+          <Button
+            type="button"
+            className="h-11 w-full gap-2 rounded-xl"
+            disabled={!detail.data || items.length === 0}
+            onClick={() => setReceiptOpen(true)}
+          >
+            <Printer className="size-4" />
+            {receiptCopy.viewReceipt}
+          </Button>
           <Button
             type="button"
             variant="outline"
@@ -244,5 +266,41 @@ export function SaleDetailSheet({ open, onOpenChange, sale, online }: Props) {
         </SheetFooter>
       </SheetContent>
     </Sheet>
+
+    <ReceiptPreviewSheet
+      open={receiptOpen}
+      onOpenChange={setReceiptOpen}
+      store={store.data ?? null}
+      sale={
+        detail.data && sale
+          ? {
+              clientSaleId: sale.client_sale_id,
+              soldAt: sale.sold_at,
+              lines: items.map((i) => ({
+                name: i.product_name,
+                quantity: i.quantity,
+                unitPrice: i.unit_price,
+                lineTotal: i.line_total,
+              })),
+              linesSubtotal: linesSubtotal,
+              billDiscountKip: billDiscountKip,
+              payment:
+                detail.data.payload.payment.method === "cash"
+                  ? {
+                      method: "cash",
+                      amountDue: detail.data.payload.payment.amountDue,
+                      amountReceived:
+                        detail.data.payload.payment.amountReceived,
+                      changeAmount: detail.data.payload.payment.changeAmount,
+                    }
+                  : {
+                      method: "transfer",
+                      amountDue: detail.data.payload.payment.amountDue,
+                    },
+            }
+          : null
+      }
+    />
+    </>
   );
 }

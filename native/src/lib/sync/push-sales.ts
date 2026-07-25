@@ -9,6 +9,7 @@ import {
 import type { SqlDb } from "@/lib/db/types";
 import { pullCatalog } from "./pull-catalog";
 import { pullSalesHistory } from "./pull-sales";
+import { pullReceiptSettings } from "./pull-settings";
 
 export type PushSalesResult = {
   attempted: number;
@@ -39,7 +40,7 @@ export async function pushSalesOutbox(db: SqlDb): Promise<PushSalesResult> {
   return { attempted: pending.length, synced, failed };
 }
 
-/** Architecture order: push outbox → pull sales history → pull catalog. */
+/** Architecture order: push outbox → pull sales/settings → pull catalog. */
 export async function syncSalesThenCatalog(
   db: SqlDb,
   opts?: { fullPull?: boolean },
@@ -50,6 +51,11 @@ export async function syncSalesThenCatalog(
     salesPull = await pullSalesHistory(db);
   } catch {
     // Offline or auth — keep local history as-is
+  }
+  try {
+    await pullReceiptSettings(db);
+  } catch {
+    // keep cached settings
   }
   const pull = await pullCatalog(db, { full: opts?.fullPull });
   return { push, salesPull, pull };

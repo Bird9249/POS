@@ -1,3 +1,4 @@
+import { useQuery } from "@tanstack/react-query";
 import { AnimatePresence, motion } from "motion/react";
 import { Banknote, Camera, QrCode, Trash2 } from "lucide-react";
 import { useEffect, useState } from "react";
@@ -12,8 +13,11 @@ import {
   SheetHeader,
   SheetTitle,
 } from "@/components/ui/sheet";
+import { resolveFileSrc } from "@/lib/api/file-url";
 import { uploadSaleSlip } from "@/lib/api/upload";
+import { getLocalDb } from "@/lib/db/client";
 import { formatKip } from "@/lib/format-kip";
+import { loadReceiptSettings } from "@/lib/sync/pull-settings";
 import { cn } from "@/lib/utils";
 import { computeCashChange, validateTransferPayment } from "./payment";
 import { SlipCameraDialog } from "./slip-camera-dialog";
@@ -51,6 +55,18 @@ export function PaySheet({ open, onOpenChange, amountDue, onComplete }: Props) {
   const [slipKey, setSlipKey] = useState<string | null>(null);
   const [slipUploading, setSlipUploading] = useState(false);
   const [slipCameraOpen, setSlipCameraOpen] = useState(false);
+
+  const storeSettings = useQuery({
+    queryKey: ["receipt-settings-pay"],
+    queryFn: async () => loadReceiptSettings(await getLocalDb()),
+    enabled: open,
+    staleTime: 30_000,
+  });
+  const qrSrc = resolveFileSrc(storeSettings.data?.qrImageKey);
+  const bankName =
+    storeSettings.data?.bankName?.trim() || copy.bankPlaceholder;
+  const bankAccount =
+    storeSettings.data?.bankAccount?.trim() || copy.accountPlaceholder;
 
   useEffect(() => {
     if (!open) return;
@@ -260,15 +276,25 @@ export function PaySheet({ open, onOpenChange, amountDue, onComplete }: Props) {
                   </div>
 
                   <div className="flex flex-col items-center gap-3 rounded-2xl border border-dashed p-6">
-                    <div className="bg-muted flex size-40 items-center justify-center rounded-xl">
-                      <QrCode className="text-muted-foreground size-20 opacity-40" />
+                    <div className="bg-muted flex size-40 items-center justify-center overflow-hidden rounded-xl">
+                      {qrSrc ? (
+                        <img
+                          src={qrSrc}
+                          alt="QR"
+                          className="size-full object-contain p-2"
+                        />
+                      ) : (
+                        <QrCode className="text-muted-foreground size-20 opacity-40" />
+                      )}
                     </div>
-                    <p className="text-muted-foreground max-w-xs text-center text-sm text-pretty">
-                      {copy.qrPlaceholder}
-                    </p>
+                    {!qrSrc ? (
+                      <p className="text-muted-foreground max-w-xs text-center text-sm text-pretty">
+                        {copy.qrPlaceholder}
+                      </p>
+                    ) : null}
                     <div className="text-center text-sm">
-                      <p className="font-medium">{copy.bankPlaceholder}</p>
-                      <p className="text-muted-foreground">{copy.accountPlaceholder}</p>
+                      <p className="font-medium">{bankName}</p>
+                      <p className="text-muted-foreground">{bankAccount}</p>
                     </div>
                     <p className="text-muted-foreground text-xs text-pretty">
                       {copy.transferHint}

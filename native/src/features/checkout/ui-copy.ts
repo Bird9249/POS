@@ -28,7 +28,7 @@ export const copy = {
   confirmCash: "ຢືນຢັນຮັບເງິນ",
   confirmTransfer: "ຢືນຢັນວ່າກວດສະລິບແລ້ວ",
   transferHint: "ໃຫ້ລູກຄ້າສະແກນ QR ແລ້ວກວດສະລິບເອງ",
-  qrPlaceholder: "QR ຈະມາຈາກການຕັ້ງຄ່າໃນ Phase 5",
+  qrPlaceholder: "ຍັງບໍ່ມີ QR — ຕັ້ງຄ່າໃນເມນູຕັ້ງຄ່າ",
   accountPlaceholder: "ບັນຊີຮ້ານ (ຍັງບໍ່ໄດ້ຕັ້ງຄ່າ)",
   bankPlaceholder: "BCEL One / ໂອນເງິນ",
   insufficient: "ເງິນທີ່ຮັບບໍ່ພໍ",
@@ -55,6 +55,6 @@ export const copy = {
   toastAddedToCart: "ເພີມກະຕ່າແລ້ວ",
   saleQueuedOffline: "ບິນຖືກບັນທຶກໃນຄິວ sync",
   salePersistError: "ບັນທຶກການຂາຍບໍ່ສຳເລັດ",
-  saleQueuedHint: "ຈະ sync ຂຶ້ນເມື່ອອອນລາຍ",
+  saleQueuedHint: "ຈະ sync ເມື່ອກັບອອນລາຍ",
   outOfStockWarn: "ສະຕັອກ 0 — ເພີມແລ້ວ (ເຕືອນ)",
 } as const;

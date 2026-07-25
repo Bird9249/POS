@@ -36,3 +36,11 @@ export function uploadProductImage(file: File) {
 export function uploadSaleSlip(file: File) {
   return uploadImage(file, "uploads/sales/slips");
 }
+
+export function uploadStoreLogo(file: File) {
+  return uploadImage(file, "uploads/store/logo");
+}
+
+export function uploadStoreQr(file: File) {
+  return uploadImage(file, "uploads/store/qr");
+}

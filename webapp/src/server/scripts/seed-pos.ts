@@ -2,6 +2,7 @@
 
 import { eq } from "drizzle-orm";
 import { createSale } from "@/modules/sales/domain/repo/create-sale";
+import { updateStoreSettings } from "@/modules/settings/domain/repo/store-settings";
 import { syncFromCode } from "@/modules/roles/domain/repo/sync-from-code";
 import { assignRoleToUser } from "@/modules/roles/domain/repo/assign-role-to-user";
 import { createUserService } from "@/modules/users/domain/service/create";
@@ -107,6 +108,22 @@ async function seedPos() {
     }
 
     await seedCatalog(db);
+
+    await updateStoreSettings(
+      {
+        storeName: "POS Demo Shop",
+        address: "Vientiane Capital",
+        phone: "020 5555 1234",
+        bankName: "BCEL One",
+        bankAccount: "010-12-00-1234567-89",
+        logoKey: null,
+        qrImageKey: null,
+        receiptWidthMm: 80,
+        footerThanks: "Thank you",
+      },
+      db,
+    );
+    logger.info("Receipt / store settings seeded");
 
     if (cashierId) {
       await seedSampleSales(cashierId);

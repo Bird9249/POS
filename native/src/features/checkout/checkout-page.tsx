@@ -27,6 +27,7 @@ import {
 } from "@/lib/db/catalog-repo";
 import type { LocalProduct } from "@/lib/db/types";
 import { formatKip } from "@/lib/format-kip";
+import type { ReceiptSaleInput } from "@/features/receipt/render-receipt";
 import { PENDING_SALES_QUERY_KEY } from "@/lib/sync/use-sales-sync";
 import { lineTotal } from "./cart-math";
 import { completeSale } from "./complete-sale";
@@ -59,7 +60,13 @@ export function CheckoutPage() {
   const [payOpen, setPayOpen] = useState(false);
   const [successOpen, setSuccessOpen] = useState(false);
   const [lastPayment, setLastPayment] = useState<CompletedPayment | null>(null);
+  const [lastReceiptSale, setLastReceiptSale] =
+    useState<ReceiptSaleInput | null>(null);
   const [queuedOffline, setQueuedOffline] = useState(false);
+
+  const cashierName =
+    (session as { user?: { name?: string } } | null | undefined)?.user?.name ??
+    null;
 
   const localCount = useQuery({
     queryKey: ["local-product-count"],
@@ -406,6 +413,13 @@ export function CheckoutPage() {
           void (async () => {
             setCompleting(true);
             try {
+              const linesSnapshot = cart.lines.map((l) => ({
+                name: l.name,
+                quantity: l.quantity,
+                unitPrice: l.unitPrice,
+                lineTotal: lineTotal(l),
+              }));
+              const totalsSnapshot = cart.totals;
               const result = await completeSale({
                 lines: cart.lines,
                 billDiscount: cart.billDiscount,
@@ -415,6 +429,26 @@ export function CheckoutPage() {
               setQueuedOffline(!result.pushed);
               setPayOpen(false);
               setLastPayment(payment);
+              setLastReceiptSale({
+                clientSaleId: result.clientSaleId,
+                soldAt: new Date(),
+                cashierName,
+                lines: linesSnapshot,
+                linesSubtotal: totalsSnapshot.linesSubtotal,
+                billDiscountKip: totalsSnapshot.billDiscount,
+                payment:
+                  payment.method === "cash"
+                    ? {
+                        method: "cash",
+                        amountDue: payment.amountDue,
+                        amountReceived: payment.amountReceived,
+                        changeAmount: payment.changeAmount,
+                      }
+                    : {
+                        method: "transfer",
+                        amountDue: payment.amountDue,
+                      },
+              });
               setSuccessOpen(true);
               cart.clear();
               await qc.invalidateQueries({ queryKey: PENDING_SALES_QUERY_KEY });
@@ -437,10 +471,12 @@ export function CheckoutPage() {
         open={successOpen}
         onOpenChange={setSuccessOpen}
         payment={lastPayment}
+        receiptSale={lastReceiptSale}
         queuedOffline={queuedOffline}
         onContinue={() => {
           setSuccessOpen(false);
           setLastPayment(null);
+          setLastReceiptSale(null);
           setQueuedOffline(false);
           searchRef.current?.focus();
         }}
