@@ -2,24 +2,22 @@ import {
   ClipboardList,
   History,
   Package,
-  Settings,
   ShoppingCart,
   type LucideIcon,
 } from "lucide-react";
-import type { PosPath } from "@/features/auth/nav-access";
+import type { BottomNavPath, PosPath } from "@/features/auth/nav-access";
 
 export type AppPath = PosPath | "/login";
 
 export type NavItem = {
-  to: PosPath;
+  to: BottomNavPath;
   label: string;
   icon: LucideIcon;
 };
 
-export const navIcons: Record<PosPath, LucideIcon> = {
+export const navIcons: Record<BottomNavPath, LucideIcon> = {
   "/checkout": ShoppingCart,
   "/sales": History,
   "/products": Package,
   "/reports": ClipboardList,
-  "/settings": Settings,
 };

@@ -56,5 +56,6 @@ export const copy = {
   saleQueuedOffline: "ບິນຖືກບັນທຶກໃນຄິວ sync",
   salePersistError: "ບັນທຶກການຂາຍບໍ່ສຳເລັດ",
   saleQueuedHint: "ຈະ sync ເມື່ອກັບອອນລາຍ",
+  saleShiftRequired: "ກະລຸນາເປີດກະກ່ອນຂາຍ",
   outOfStockWarn: "ສະຕັອກ 0 — ເພີມແລ້ວ (ເຕືອນ)",
 } as const;

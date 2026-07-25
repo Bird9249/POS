@@ -1,8 +1,14 @@
 import { beforeAll, describe, expect, test } from "bun:test";
 import { eq } from "drizzle-orm";
 import { syncFromCode } from "@/modules/roles/domain/repo/sync-from-code";
+import {
+  closeShiftZ,
+  getOpenShiftForUser,
+  openShift,
+} from "@/modules/shifts/domain/repo/shifts";
 import { db } from "@/server/platform/db/client";
 import { product } from "@/server/platform/db/schema";
+import { user } from "@/server/platform/db/schema/auth";
 import { seedCatalog } from "@/server/scripts/seed-catalog";
 import { createServer } from "@/server/platform/http/server";
 import { authedRequest, signInCookie } from "@/modules/products/domain/http/test-auth";
@@ -13,12 +19,20 @@ describe.skipIf(!hasDb)("sales API", () => {
   const app = createServer();
   let adminCookie = "";
   let cashierCookie = "";
+  let cashierId = "";
 
   beforeAll(async () => {
     await syncFromCode(db);
     await seedCatalog(db);
     adminCookie = await signInCookie("admin@admin.com", "123456");
     cashierCookie = await signInCookie("cashier@pos.com", "123456");
+    const [c] = await db
+      .select({ id: user.id })
+      .from(user)
+      .where(eq(user.email, "cashier@pos.com"))
+      .limit(1);
+    cashierId = c!.id;
+    await openShift(cashierId, db);
   });
 
   test("POST /api/sales creates bill and cuts stock", async () => {
@@ -155,5 +169,36 @@ describe.skipIf(!hasDb)("sales API", () => {
     expect(adminBody.items.some((s) => s.clientSaleId === clientSaleId)).toBe(
       true,
     );
+  });
+
+  test("POST /api/sales without open shift returns 409 SHIFT_REQUIRED", async () => {
+    const open = await getOpenShiftForUser(cashierId, db);
+    if (open) {
+      await closeShiftZ(open.id, cashierId, { countedCashKip: 0 }, db);
+    }
+
+    const res = await app.handle(
+      authedRequest("http://localhost/api/sales", cashierCookie, {
+        method: "POST",
+        body: JSON.stringify({
+          clientSaleId: `sale_noshift_${Date.now()}`,
+          lines: [
+            { productId: "prod_water_500", quantity: 1, unitPrice: 5000 },
+          ],
+          payment: {
+            method: "cash",
+            amountDue: 5000,
+            amountReceived: 5000,
+            changeAmount: 0,
+          },
+        }),
+      }),
+    );
+    expect(res.status).toBe(409);
+    const body = (await res.json()) as { error: string };
+    expect(body.error).toBe("SHIFT_REQUIRED");
+
+    // Restore open shift for any later suites sharing DB
+    await openShift(cashierId, db);
   });
 });

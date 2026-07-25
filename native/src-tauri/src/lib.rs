@@ -127,6 +127,7 @@ CREATE INDEX IF NOT EXISTS idx_sale_items_outbox_sale
 pub fn run() {
     tauri::Builder::default()
         .plugin(tauri_plugin_opener::init())
+        .plugin(tauri_plugin_thermal_printer::init())
         .plugin(
             tauri_plugin_sql::Builder::default()
                 .add_migrations("sqlite:pos.db", catalog_migrations())

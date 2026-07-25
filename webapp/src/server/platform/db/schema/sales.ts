@@ -10,6 +10,7 @@ import {
 import { nanoid } from "nanoid";
 import { user } from "./auth";
 import { product } from "./catalog";
+import { shift } from "./shift";
 
 export const sale = pgTable(
   "sale",
@@ -21,6 +22,9 @@ export const sale = pgTable(
     soldBy: text("sold_by")
       .notNull()
       .references(() => user.id, { onDelete: "restrict" }),
+    shiftId: text("shift_id").references(() => shift.id, {
+      onDelete: "set null",
+    }),
     soldAt: timestamp("sold_at", { withTimezone: true, mode: "date" })
       .notNull()
       .$defaultFn(() => new Date()),
@@ -42,6 +46,7 @@ export const sale = pgTable(
     uniqueIndex("sale_client_sale_id_unique").on(t.clientSaleId),
     index("sale_by_sold_by_time").on(t.soldBy, t.soldAt),
     index("sale_by_sold_at").on(t.soldAt),
+    index("sale_by_shift").on(t.shiftId),
   ],
 );
 

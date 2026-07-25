@@ -26,7 +26,11 @@ export const salesHttpRoutes = new Elysia()
       const result = await createSale(body, user.id, db);
       if (!result.ok) {
         set.status =
-          result.error === "PRODUCT_NOT_FOUND" ? 404 : 400;
+          result.error === "PRODUCT_NOT_FOUND"
+            ? 404
+            : result.error === "SHIFT_REQUIRED"
+              ? 409
+              : 400;
         return { error: result.error };
       }
       set.status = result.created ? 201 : 200;

@@ -1,5 +1,7 @@
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import { useNavigate } from "@tanstack/react-router";
+import { Users } from "lucide-react";
 import { Controller, useForm, type Resolver } from "react-hook-form";
 import { toast } from "sonner";
 import { Alert, AlertDescription } from "@/components/ui/alert";
@@ -9,6 +11,7 @@ import { Input } from "@/components/ui/input";
 import { Spinner } from "@/components/ui/spinner";
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Textarea } from "@/components/ui/textarea";
+import { USERS_NAV_ITEM } from "@/features/auth/nav-access";
 import { Perm, hasPermission } from "@/features/auth/permissions";
 import {
   getSessionPermissions,
@@ -29,12 +32,15 @@ import {
 } from "@/lib/db/settings-repo";
 import { cn } from "@/lib/utils";
 import { useState } from "react";
+import { PrinterSettingsSection } from "./printer-settings-section";
 import {
   receiptSettingsSchema,
   type ReceiptSettingsFormValues,
 } from "./receipt-schema";
+import { ThemeSettingsSection } from "./theme-settings-section";
 import { settingsCopy as copy } from "./ui-copy";
 
+/** Shared with AppLogo so header updates after save / pull. */
 export const RECEIPT_SETTINGS_QUERY_KEY = ["receipt-settings"] as const;
 
 export function SettingsPage() {
@@ -43,6 +49,8 @@ export function SettingsPage() {
     session as { permissions?: string[] } | null | undefined,
   );
   const canManage = hasPermission(permissions, Perm.settingsManage);
+  const canManageUsers = hasPermission(permissions, Perm.usersRead);
+  const navigate = useNavigate();
   const { status } = useOnlineStatus();
   const online = status === "online";
   const qc = useQueryClient();
@@ -123,7 +131,9 @@ export function SettingsPage() {
     },
   });
 
-  if (!canManage) {
+  const canAccess = canManage || hasPermission(permissions, Perm.salesCreate);
+
+  if (!canAccess) {
     return (
       <Alert>
         <AlertDescription>{copy.noPermission}</AlertDescription>
@@ -135,8 +145,18 @@ export function SettingsPage() {
   const qrSrc = resolveFileSrc(form.watch("qrImageKey") || null);
   const watched = form.watch();
 
+  if (!canManage) {
+    return (
+      <div className="flex flex-col gap-3 pb-2">
+        <h1 className="text-lg font-semibold">{copy.title}</h1>
+        <ThemeSettingsSection />
+        <PrinterSettingsSection />
+      </div>
+    );
+  }
+
   return (
-    <div className="flex min-h-0 flex-1 flex-col gap-3">
+    <div className="flex flex-col gap-3 pb-2">
       <div className="flex items-center justify-between gap-2">
         <h1 className="text-lg font-semibold">{copy.title}</h1>
         <Button
@@ -156,6 +176,21 @@ export function SettingsPage() {
         </Alert>
       ) : null}
 
+      {canManageUsers ? (
+        <Button
+          type="button"
+          variant="outline"
+          className="h-11 w-full justify-start gap-2 rounded-xl"
+          onClick={() => void navigate({ to: USERS_NAV_ITEM.to })}
+        >
+          <Users className="size-4" />
+          {copy.usersManage}
+        </Button>
+      ) : null}
+
+      <ThemeSettingsSection />
+      <PrinterSettingsSection />
+
       {settingsQuery.isLoading ? (
         <div className="flex h-40 items-center justify-center">
           <Spinner className="size-5" />
@@ -166,10 +201,10 @@ export function SettingsPage() {
         </Alert>
       ) : (
         <form
-          className="flex min-h-0 flex-1 flex-col gap-3"
+          className="flex flex-col gap-3"
           onSubmit={form.handleSubmit((v) => save.mutate(v))}
         >
-          <div className="min-h-0 flex-1 space-y-4 overflow-y-auto rounded-2xl border p-4">
+          <div className="space-y-4 rounded-2xl border p-4">
             <p className="text-sm font-semibold">{copy.receiptSection}</p>
 
             <Controller
@@ -340,16 +375,14 @@ export function SettingsPage() {
             </div>
           </div>
 
-          <div className="bg-background/95 shrink-0 border-t pt-3 pb-[max(0.5rem,env(safe-area-inset-bottom))] backdrop-blur">
-            <Button
-              type="submit"
-              className="h-12 w-full rounded-xl text-base"
-              disabled={!online || save.isPending || !form.formState.isDirty}
-            >
-              {save.isPending ? <Spinner className="size-4" /> : null}
-              {save.isPending ? copy.saving : copy.save}
-            </Button>
-          </div>
+          <Button
+            type="submit"
+            className="h-12 w-full rounded-xl text-base"
+            disabled={!online || save.isPending || !form.formState.isDirty}
+          >
+            {save.isPending ? <Spinner className="size-4" /> : null}
+            {save.isPending ? copy.saving : copy.save}
+          </Button>
         </form>
       )}
 

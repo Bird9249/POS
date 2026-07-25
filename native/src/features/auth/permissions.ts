@@ -8,6 +8,11 @@ export const Perm = {
   productsCostRead: "products:cost_read",
   reportsRead: "reports:read",
   settingsManage: "settings:manage",
+  usersRead: "users:read",
+  usersCreate: "users:create",
+  usersUpdate: "users:update",
+  usersDelete: "users:delete",
+  usersBan: "users:ban",
 } as const;
 
 export function hasPermission(

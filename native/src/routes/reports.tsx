@@ -1,15 +1,6 @@
 import { createFileRoute } from "@tanstack/react-router";
-import { PlaceholderPage } from "@/components/placeholder-page";
+import { ReportsPage } from "@/features/reports/reports-page";
 
 export const Route = createFileRoute("/reports")({
-  component: Page,
+  component: ReportsPage,
 });
-
-function Page() {
-  return (
-    <PlaceholderPage
-      title="ລາຍງານ"
-      description="ລາຍງານການຂາຍ — ຈະພັດທະນາໃນ Phase 6"
-    />
-  );
-}

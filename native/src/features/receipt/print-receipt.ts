@@ -1,7 +1,28 @@
+import { getLocalDb } from "@/lib/db/client";
+import { getPrinterPrefs } from "@/lib/db/printer-prefs";
 import type { RenderedReceipt } from "./render-receipt";
+import { printThermalReceipt } from "./thermal-print";
+
+/** Print via configured thermal (USB/Bluetooth) or system dialog fallback. */
+export async function printReceiptText(receipt: RenderedReceipt) {
+  const db = await getLocalDb();
+  const prefs = await getPrinterPrefs(db);
+
+  if (prefs.mode === "thermal" && prefs.printer) {
+    try {
+      await printThermalReceipt(receipt, prefs.printer);
+      return;
+    } catch (err) {
+      // Fall through to system print if thermal fails? Prefer fail loud for thermal mode.
+      throw err instanceof Error ? err : new Error(String(err));
+    }
+  }
+
+  printViaSystemDialog(receipt);
+}
 
 /** Open system print dialog with monospace receipt (thermal driver / PDF). */
-export function printReceiptText(receipt: RenderedReceipt) {
+export function printViaSystemDialog(receipt: RenderedReceipt) {
   const html = `<!doctype html>
 <html>
 <head>
@@ -59,7 +80,6 @@ export function printReceiptText(receipt: RenderedReceipt) {
       cleanup();
       throw new Error("PRINT_FAILED");
     }
-    // Fallback cleanup if afterprint never fires
     setTimeout(cleanup, 60_000);
   }, 50);
 }

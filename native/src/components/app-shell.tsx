@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useState, type ReactNode } from "react";
 import { Link, useNavigate, useRouterState } from "@tanstack/react-router";
-import { Menu, LogOut } from "lucide-react";
+import { LogOut, Settings, Users } from "lucide-react";
 import { toast } from "sonner";
 
 import { AppLogo } from "@/components/app-logo";
@@ -26,15 +26,12 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import {
-  Sheet,
-  SheetContent,
-  SheetHeader,
-  SheetTitle,
-  SheetTrigger,
-} from "@/components/ui/sheet";
-import {
+  canAccessSettings,
+  canAccessUsers,
   filterNavByPermissions,
   POS_NAV_ITEMS,
+  SETTINGS_NAV_ITEM,
+  USERS_NAV_ITEM,
 } from "@/features/auth/nav-access";
 import { getSessionPermissions, useSession } from "@/features/auth/use-session";
 import { authClient } from "@/lib/api/auth-client";
@@ -43,7 +40,6 @@ import { navIcons } from "@/lib/nav";
 import { cn } from "@/lib/utils";
 
 export function AppShell({ children }: { children: ReactNode }) {
-  const [menuOpen, setMenuOpen] = useState(false);
   const [signOutOpen, setSignOutOpen] = useState(false);
   const [signingOut, setSigningOut] = useState(false);
   const pathname = useRouterState({ select: (s) => s.location.pathname });
@@ -56,10 +52,11 @@ export function AppShell({ children }: { children: ReactNode }) {
     () => filterNavByPermissions(POS_NAV_ITEMS, permissions),
     [permissions],
   );
+  const showSettings = canAccessSettings(permissions);
+  const showUsers = canAccessUsers(permissions);
   const userName = data?.user?.name || data?.user?.email || "ຜູ້ໃຊ້";
   const initials = userName.slice(0, 2).toUpperCase();
 
-  // Warm SQLite + migrations before the first sync button press.
   useEffect(() => {
     void getLocalDb().catch(() => {});
   }, []);
@@ -80,43 +77,6 @@ export function AppShell({ children }: { children: ReactNode }) {
     <div className="bg-background text-foreground flex h-dvh flex-col overflow-hidden pt-[env(safe-area-inset-top)]">
       <header className="bg-background shrink-0 border-b">
         <div className="mx-auto flex h-14 max-w-lg items-center gap-3 px-4">
-          <Sheet open={menuOpen} onOpenChange={setMenuOpen}>
-            <SheetTrigger asChild>
-              <Button
-                variant="ghost"
-                size="icon"
-                className="size-11"
-                aria-label="ເປີດເມນູ"
-              >
-                <Menu />
-              </Button>
-            </SheetTrigger>
-            <SheetContent side="left" className="w-72">
-              <SheetHeader className="flex-row items-center gap-3 space-y-0 text-left">
-                <AppLogo size="sm" />
-                <SheetTitle>POS</SheetTitle>
-              </SheetHeader>
-              <nav className="mt-4 flex flex-col gap-1 px-2">
-                {items.map((item) => {
-                  const Icon = navIcons[item.to];
-                  return (
-                    <Button
-                      key={item.to}
-                      variant={pathname === item.to ? "secondary" : "ghost"}
-                      className="h-11 justify-start"
-                      asChild
-                    >
-                      <Link to={item.to} onClick={() => setMenuOpen(false)}>
-                        <Icon data-icon="inline-start" />
-                        {item.label}
-                      </Link>
-                    </Button>
-                  );
-                })}
-              </nav>
-            </SheetContent>
-          </Sheet>
-
           <div className="flex min-w-0 flex-1 items-center gap-2.5">
             <AppLogo size="sm" className="shrink-0" />
             <div className="min-w-0">
@@ -143,6 +103,26 @@ export function AppShell({ children }: { children: ReactNode }) {
             <DropdownMenuContent align="end" className="w-48">
               <DropdownMenuLabel>ບັນຊີ</DropdownMenuLabel>
               <DropdownMenuSeparator />
+              {showUsers ? (
+                <DropdownMenuItem
+                  onSelect={() => {
+                    void navigate({ to: USERS_NAV_ITEM.to });
+                  }}
+                >
+                  <Users data-icon="inline-start" />
+                  {USERS_NAV_ITEM.label}
+                </DropdownMenuItem>
+              ) : null}
+              {showSettings ? (
+                <DropdownMenuItem
+                  onSelect={() => {
+                    void navigate({ to: SETTINGS_NAV_ITEM.to });
+                  }}
+                >
+                  <Settings data-icon="inline-start" />
+                  {SETTINGS_NAV_ITEM.label}
+                </DropdownMenuItem>
+              ) : null}
               <DropdownMenuItem onSelect={() => setSignOutOpen(true)}>
                 <LogOut data-icon="inline-start" />
                 ອອກຈາກລະບົບ
@@ -156,7 +136,9 @@ export function AppShell({ children }: { children: ReactNode }) {
         <AlertDialogContent>
           <AlertDialogHeader>
             <AlertDialogTitle>ອອກຈາກລະບົບບໍ?</AlertDialogTitle>
-            <AlertDialogDescription>ທ່ານຈະຕ້ອງເຂົ້າລະບົບໃໝ່ເພື່ອໃຊ້ງານຕໍ່</AlertDialogDescription>
+            <AlertDialogDescription>
+              ທ່ານຈະຕ້ອງເຂົ້າລະບົບໃໝ່ເພື່ອໃຊ້ງານຕໍ່
+            </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
             <AlertDialogCancel disabled={signingOut}>ຍົກເລີກ</AlertDialogCancel>

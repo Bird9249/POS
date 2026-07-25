@@ -18,6 +18,7 @@ type Props = {
   onLoadMore: () => void;
   onOpen: (product: Product) => void;
   onRequestDelete: (id: string) => void;
+  className?: string;
 };
 
 export function ProductVirtualList({
@@ -28,6 +29,7 @@ export function ProductVirtualList({
   onLoadMore,
   onOpen,
   onRequestDelete,
+  className,
 }: Props) {
   const parentRef = useRef<HTMLDivElement>(null);
 
@@ -95,7 +97,10 @@ export function ProductVirtualList({
   return (
     <div
       ref={parentRef}
-      className="h-[min(60dvh,28rem)] overflow-y-auto rounded-lg border"
+      className={cn(
+        "min-h-0 flex-1 overflow-y-auto rounded-2xl border",
+        className,
+      )}
     >
       <div className="relative w-full" style={{ height: totalSize }}>
         {rows.map((vRow) => {

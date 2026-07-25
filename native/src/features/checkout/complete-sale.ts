@@ -3,6 +3,7 @@ import {
   decrementLocalStock,
   enqueueSale,
 } from "@/lib/db/sales-outbox-repo";
+import { getCachedOpenShift } from "@/lib/db/shift-repo";
 import { pushSalesOutbox } from "@/lib/sync/push-sales";
 import {
   buildSalePayload,
@@ -25,6 +26,12 @@ export async function completeSale(input: {
   payment: CompletedPayment;
   online: boolean;
 }): Promise<CompleteSaleResult> {
+  const db = await getLocalDb();
+  const openShift = await getCachedOpenShift(db);
+  if (!openShift?.id) {
+    throw new Error("SHIFT_REQUIRED");
+  }
+
   const clientSaleId = newClientSaleId();
   const { payload, items } = buildSalePayload({
     clientSaleId,
@@ -33,7 +40,6 @@ export async function completeSale(input: {
     payment: input.payment,
   });
 
-  const db = await getLocalDb();
   await enqueueSale(db, { payload, items });
   await decrementLocalStock(
     db,

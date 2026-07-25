@@ -1,5 +1,5 @@
 import { useQuery, useQueryClient } from "@tanstack/react-query";
-import { Minus, Plus, ScanBarcode, Search, Tag, Trash2, X } from "lucide-react";
+import { Clock3, Minus, Plus, ScanBarcode, Search, Tag, Trash2, X } from "lucide-react";
 import { AnimatePresence, motion } from "motion/react";
 import { useEffect, useRef, useState } from "react";
 import { toast } from "sonner";
@@ -16,6 +16,10 @@ import {
   getSessionPermissions,
   useSession,
 } from "@/features/auth/use-session";
+import { OpenShiftBanner } from "@/features/reports/open-shift-banner";
+import { ShiftSheet } from "@/features/reports/shift-sheet";
+import { shiftCopy } from "@/features/reports/ui-copy";
+import { useCurrentShift } from "@/features/reports/use-current-shift";
 import { BarcodeScanDialog } from "@/features/products/barcode-scan-dialog";
 import { useDebouncedValue } from "@/hooks/use-debounced-value";
 import { useOnlineStatus } from "@/hooks/use-online-status";
@@ -46,6 +50,10 @@ export function CheckoutPage() {
   const canSell = hasPermission(permissions, Perm.salesCreate);
   const { status: onlineStatus } = useOnlineStatus();
   const qc = useQueryClient();
+  const currentShift = useCurrentShift({ enabled: canSell });
+  const shiftReady = Boolean(currentShift.data?.id);
+  const shiftBlocking =
+    canSell && (currentShift.isLoading || !shiftReady);
 
   const cart = useCart();
   const searchRef = useRef<HTMLInputElement>(null);
@@ -63,6 +71,7 @@ export function CheckoutPage() {
   const [lastReceiptSale, setLastReceiptSale] =
     useState<ReceiptSaleInput | null>(null);
   const [queuedOffline, setQueuedOffline] = useState(false);
+  const [shiftOpen, setShiftOpen] = useState(false);
 
   const cashierName =
     (session as { user?: { name?: string } } | null | undefined)?.user?.name ??
@@ -131,6 +140,11 @@ export function CheckoutPage() {
     product: LocalProduct,
     opts?: { announce?: boolean },
   ) {
+    if (shiftBlocking) {
+      toast.error(copy.saleShiftRequired);
+      setShiftOpen(true);
+      return;
+    }
     cart.addProduct(product);
     if (opts?.announce) {
       toast.success(`${copy.toastAddedToCart} · ${product.name}`);
@@ -156,6 +170,8 @@ export function CheckoutPage() {
           <AlertDescription>{copy.syncNeeded}</AlertDescription>
         </Alert>
       ) : null}
+
+      <OpenShiftBanner />
 
       <form
         className="shrink-0 space-y-2"
@@ -247,9 +263,22 @@ export function CheckoutPage() {
       <div className="flex min-h-0 flex-1 flex-col overflow-hidden rounded-2xl border">
         <div className="flex items-center justify-between border-b px-3 py-2">
           <p className="text-sm font-semibold">{copy.cart}</p>
-          <span className="text-muted-foreground text-xs tabular-nums">
-            {cart.lines.length}
-          </span>
+          <div className="flex items-center gap-2">
+            <Button
+              type="button"
+              variant="ghost"
+              size="sm"
+              className="h-8 gap-1 rounded-lg px-2"
+              aria-label={shiftCopy.title}
+              onClick={() => setShiftOpen(true)}
+            >
+              <Clock3 className="size-3.5" />
+              <span className="text-xs">{shiftCopy.title}</span>
+            </Button>
+            <span className="text-muted-foreground text-xs tabular-nums">
+              {cart.lines.length}
+            </span>
+          </div>
         </div>
 
         <div className="min-h-0 flex-1 overflow-y-auto">
@@ -372,8 +401,19 @@ export function CheckoutPage() {
         <Button
           type="button"
           className="h-12 w-full rounded-xl text-base"
-          disabled={cart.lines.length === 0 || cart.totals.amountDue < 0}
-          onClick={() => setPayOpen(true)}
+          disabled={
+            shiftBlocking ||
+            cart.lines.length === 0 ||
+            cart.totals.amountDue < 0
+          }
+          onClick={() => {
+            if (shiftBlocking) {
+              toast.error(copy.saleShiftRequired);
+              setShiftOpen(true);
+              return;
+            }
+            setPayOpen(true);
+          }}
         >
           {copy.pay}
         </Button>
@@ -457,9 +497,16 @@ export function CheckoutPage() {
                 toast.message(copy.saleQueuedOffline);
               }
             } catch (err) {
-              toast.error(
-                err instanceof Error ? err.message : copy.salePersistError,
-              );
+              const msg =
+                err instanceof Error && err.message === "SHIFT_REQUIRED"
+                  ? copy.saleShiftRequired
+                  : err instanceof Error
+                    ? err.message
+                    : copy.salePersistError;
+              toast.error(msg);
+              if (err instanceof Error && err.message === "SHIFT_REQUIRED") {
+                setShiftOpen(true);
+              }
             } finally {
               setCompleting(false);
             }
@@ -481,6 +528,8 @@ export function CheckoutPage() {
           searchRef.current?.focus();
         }}
       />
+
+      <ShiftSheet open={shiftOpen} onOpenChange={setShiftOpen} />
     </div>
   );
 }

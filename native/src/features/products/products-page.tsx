@@ -19,6 +19,7 @@ import {
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
 import { Alert, AlertDescription } from "@/components/ui/alert";
+import { Spinner } from "@/components/ui/spinner";
 import { Tabs, TabsContent } from "@/components/ui/tabs";
 import { Perm, hasPermission } from "@/features/auth/permissions";
 import {
@@ -110,51 +111,62 @@ export function ProductsPage() {
   }
 
   return (
-    <div className="flex flex-col gap-3">
-      <Tabs value={tab} onValueChange={setTab}>
-        <ProductsToolbar
-          tab={tab}
-          q={q}
-          onQChange={setQ}
-          lowStock={lowStock}
-          onLowStockChange={setLowStock}
-          categoryId={categoryId}
-          onCategoryIdChange={setCategoryId}
-          categories={categories.data?.items ?? []}
-          onSync={catalogSync.sync}
-          isSyncing={catalogSync.isSyncing}
-          syncDisabled={catalogSync.status === "offline"}
-          onAdd={() => {
-            if (tab === "products") {
-              setEditing(null);
-              setFormOpen(true);
-              return;
-            }
-            setCategoryAddSignal((n) => n + 1);
-          }}
-        />
+    <div className="flex min-h-0 flex-1 flex-col gap-3">
+      <Tabs
+        value={tab}
+        onValueChange={setTab}
+        className="flex min-h-0 flex-1 flex-col gap-3"
+      >
+        <div className="shrink-0">
+          <ProductsToolbar
+            tab={tab}
+            q={q}
+            onQChange={setQ}
+            lowStock={lowStock}
+            onLowStockChange={setLowStock}
+            categoryId={categoryId}
+            onCategoryIdChange={setCategoryId}
+            categories={categories.data?.items ?? []}
+            onSync={catalogSync.sync}
+            isSyncing={catalogSync.isSyncing}
+            syncDisabled={catalogSync.status === "offline"}
+            onAdd={() => {
+              if (tab === "products") {
+                setEditing(null);
+                setFormOpen(true);
+                return;
+              }
+              setCategoryAddSignal((n) => n + 1);
+            }}
+          />
+        </div>
 
-        <TabsContent value="products" className="mt-3 space-y-3">
+        <TabsContent
+          value="products"
+          className="mt-0 flex min-h-0 flex-1 flex-col outline-none"
+        >
           <motion.div
             key={`panel-${debouncedQ}-${lowStock}-${categoryId}`}
             initial={{ opacity: 0, y: 6 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.18 }}
-            className="space-y-3"
+            className="flex min-h-0 flex-1 flex-col gap-3"
           >
             {infinite.isError ? (
-              <Alert variant="destructive">
+              <Alert variant="destructive" className="shrink-0">
                 <AlertDescription>{copy.loadError}</AlertDescription>
               </Alert>
             ) : null}
 
-            {!infinite.isLoading && items.length === 0 ? (
+            {infinite.isLoading ? (
+              <div className="text-muted-foreground flex h-40 items-center justify-center gap-2 text-sm">
+                <Spinner className="size-5" />
+              </div>
+            ) : items.length === 0 ? (
               <p className="text-muted-foreground py-10 text-center text-sm">
                 {copy.emptyProducts}
               </p>
-            ) : null}
-
-            {items.length > 0 ? (
+            ) : (
               <ProductVirtualList
                 key={`products-${debouncedQ}-${lowStock}-${categoryId}`}
                 items={items}
@@ -168,11 +180,14 @@ export function ProductsPage() {
                 }}
                 onRequestDelete={setDeleteId}
               />
-            ) : null}
+            )}
           </motion.div>
         </TabsContent>
 
-        <TabsContent value="categories" className="mt-3">
+        <TabsContent
+          value="categories"
+          className="mt-0 flex min-h-0 flex-1 flex-col outline-none"
+        >
           <CategoriesPanel addSignal={categoryAddSignal} />
         </TabsContent>
       </Tabs>

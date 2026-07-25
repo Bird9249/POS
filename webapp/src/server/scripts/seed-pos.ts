@@ -3,6 +3,7 @@
 import { eq } from "drizzle-orm";
 import { createSale } from "@/modules/sales/domain/repo/create-sale";
 import { updateStoreSettings } from "@/modules/settings/domain/repo/store-settings";
+import { ensureSeedOpenShift } from "@/modules/shifts/domain/repo/shifts";
 import { syncFromCode } from "@/modules/roles/domain/repo/sync-from-code";
 import { assignRoleToUser } from "@/modules/roles/domain/repo/assign-role-to-user";
 import { createUserService } from "@/modules/users/domain/service/create";
@@ -10,6 +11,8 @@ import { db } from "@/server/platform/db/client";
 import { user } from "@/server/platform/db/schema/auth";
 import { logger } from "@/server/platform/observability/logger";
 import { seedCatalog } from "./seed-catalog";
+
+const SEED_SHIFT_ID = "seed_shift_cashier_open";
 
 const SEED_USERS = [
   {
@@ -81,6 +84,48 @@ async function seedSampleSales(cashierId: string) {
         slipImageKey: "seed/slip-transfer-001.jpg",
       },
     },
+    {
+      clientSaleId: "seed_sale_cash_002",
+      soldAt: new Date(Date.now() - 90 * 60 * 1000),
+      lines: [
+        { productId: "prod_water_500", quantity: 4, unitPrice: 5000 },
+        { productId: "prod_energy", quantity: 1, unitPrice: 10000 },
+      ],
+      payment: {
+        method: "cash" as const,
+        amountDue: 30000,
+        amountReceived: 30000,
+        changeAmount: 0,
+      },
+    },
+    {
+      clientSaleId: "seed_sale_transfer_002",
+      soldAt: new Date(Date.now() - 45 * 60 * 1000),
+      lines: [
+        { productId: "prod_biscuit", quantity: 2, unitPrice: 8000 },
+        { productId: "prod_chips", quantity: 2, unitPrice: 7000 },
+      ],
+      payment: {
+        method: "transfer" as const,
+        amountDue: 30000,
+        confirmedByStaff: true as const,
+        slipImageKey: "seed/slip-transfer-002.jpg",
+      },
+    },
+    {
+      clientSaleId: "seed_sale_cash_003",
+      soldAt: new Date(Date.now() - 20 * 60 * 1000),
+      lines: [
+        { productId: "prod_candy_low", quantity: 3, unitPrice: 2000 },
+        { productId: "prod_water_500", quantity: 1, unitPrice: 5000 },
+      ],
+      payment: {
+        method: "cash" as const,
+        amountDue: 11000,
+        amountReceived: 20000,
+        changeAmount: 9000,
+      },
+    },
   ];
 
   let created = 0;
@@ -126,6 +171,12 @@ async function seedPos() {
     logger.info("Receipt / store settings seeded");
 
     if (cashierId) {
+      const openShift = await ensureSeedOpenShift(
+        cashierId,
+        SEED_SHIFT_ID,
+        db,
+      );
+      logger.info(`Open shift ensured: ${openShift.id}`);
       await seedSampleSales(cashierId);
     }
 

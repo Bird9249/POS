@@ -8,6 +8,18 @@
       content="width=device-width, initial-scale=1.0, viewport-fit=cover"
     />
     <title>POS</title>
+    <script>
+      (function () {
+        try {
+          var t = localStorage.getItem("pos-theme");
+          var dark =
+            t === "dark" ||
+            ((t === "system" || !t) &&
+              window.matchMedia("(prefers-color-scheme: dark)").matches);
+          if (dark) document.documentElement.classList.add("dark");
+        } catch (_) {}
+      })();
+    </script>
   </head>
 
   <body class="antialiased">

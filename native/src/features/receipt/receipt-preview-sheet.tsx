@@ -99,11 +99,13 @@ export function ReceiptPreviewSheet({
             disabled={!rendered}
             onClick={() => {
               if (!rendered) return;
-              try {
-                printReceiptText(rendered);
-              } catch {
-                toast.error(copy.printError);
-              }
+              void (async () => {
+                try {
+                  await printReceiptText(rendered);
+                } catch {
+                  toast.error(copy.printError);
+                }
+              })();
             }}
           >
             <Printer className="size-4" />

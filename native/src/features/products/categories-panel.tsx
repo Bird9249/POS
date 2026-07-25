@@ -151,14 +151,14 @@ export function CategoriesPanel({ addSignal = 0 }: Props) {
   }
 
   return (
-    <div className="space-y-3">
+    <div className="flex min-h-0 flex-1 flex-col gap-3">
       {list.isError ? (
-        <Alert variant="destructive">
+        <Alert variant="destructive" className="shrink-0">
           <AlertDescription>{copy.loadError}</AlertDescription>
         </Alert>
       ) : null}
 
-      <div className="overflow-hidden rounded-2xl border">
+      <div className="min-h-0 flex-1 overflow-y-auto rounded-2xl border">
         {list.isLoading ? (
           <div className="text-muted-foreground flex h-40 items-center justify-center gap-2 text-sm">
             <Spinner className="size-5" />

@@ -1,4 +1,5 @@
 import { and, eq, inArray, isNull } from "drizzle-orm";
+import { resolveOpenShiftId } from "@/modules/shifts/domain/repo/shifts";
 import type { DbClient } from "@/server/platform/db/client";
 import { product, sale, saleItem } from "@/server/platform/db/schema";
 import {
@@ -12,7 +13,14 @@ import type { CreateSaleDTO } from "../contracts";
 
 export type CreateSaleResult =
   | { ok: true; sale: typeof sale.$inferSelect; items: (typeof saleItem.$inferSelect)[]; created: boolean }
-  | { ok: false; error: "PRODUCT_NOT_FOUND" | "AMOUNT_MISMATCH" | "INVALID_PAYMENT" };
+  | {
+      ok: false;
+      error:
+        | "PRODUCT_NOT_FOUND"
+        | "AMOUNT_MISMATCH"
+        | "INVALID_PAYMENT"
+        | "SHIFT_REQUIRED";
+    };
 
 export async function createSale(
   input: CreateSaleDTO,
@@ -78,6 +86,10 @@ export async function createSale(
   const soldAt = input.soldAt ?? new Date();
   const billDisc = input.billDiscount ?? null;
   const billKip = billDiscountKip(totals.linesSubtotal, billDisc);
+  const shiftId = await resolveOpenShiftId(soldBy, db);
+  if (!shiftId) {
+    return { ok: false, error: "SHIFT_REQUIRED" };
+  }
 
   return db.transaction(async (tx) => {
     // Race-safe idempotency inside transaction
@@ -99,6 +111,7 @@ export async function createSale(
       .values({
         clientSaleId: input.clientSaleId,
         soldBy,
+        shiftId,
         soldAt,
         paymentMethod: input.payment.method,
         amountDue: input.payment.amountDue,
