@@ -63,4 +63,6 @@ export const shiftCopy = {
   statusOpen: "ເປີດ",
   statusClosed: "ປິດແລ້ວ",
   offline: "ຕ້ອງອອນລາຍເພື່ອຈັດການກະ",
+  expandDetails: "ເປີດລາຍລະອຽດ",
+  collapseDetails: "ປິດລາຍລະອຽດ",
 } as const;

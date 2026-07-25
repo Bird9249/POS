@@ -4,7 +4,7 @@ import {
   enqueueSale,
 } from "@/lib/db/sales-outbox-repo";
 import { getCachedOpenShift } from "@/lib/db/shift-repo";
-import { pushSalesOutbox } from "@/lib/sync/push-sales";
+import { syncSalesThenCatalog } from "@/lib/sync/push-sales";
 import {
   buildSalePayload,
   newClientSaleId,
@@ -19,7 +19,7 @@ export type CompleteSaleResult = {
   pushError?: string;
 };
 
-/** Persist sale locally (outbox + stock), then try push if online. */
+/** Persist sale locally (outbox + stock), then push→pull if online. */
 export async function completeSale(input: {
   lines: CartLine[];
   billDiscount: BillDiscount;
@@ -54,12 +54,13 @@ export async function completeSale(input: {
   }
 
   try {
-    const result = await pushSalesOutbox(db);
-    const pushed = result.synced > 0 && result.failed === 0;
+    const result = await syncSalesThenCatalog(db);
+    const pushed = result.push.synced > 0 && result.push.failed === 0;
     return {
       clientSaleId,
       pushed,
-      pushError: result.failed > 0 ? "PUSH_PARTIAL_OR_FAILED" : undefined,
+      pushError:
+        result.push.failed > 0 ? "PUSH_PARTIAL_OR_FAILED" : undefined,
     };
   } catch (err) {
     return {

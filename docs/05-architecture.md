@@ -173,7 +173,7 @@ Online แล้ว:
 
 ### Auth กับ Tauri
 - ใช้ Better Auth ที่มีอยู่ แต่ต้องออกแบบให้ native เรียกข้าม origin ได้ (cookie `SameSite=None; Secure` หรือ pattern token ที่เหมาะกับ WebView)
-- Session หมดอายุตอนออฟไลน์: อนุญาตขายต่อด้วย session ที่ cache ไว้ในช่วงสั้นๆ แล้วบังคับ refresh เมื่อกลับออนไลน์ (กำหนดนโยบายชัดใน implementation)
+- Session หมดอายุตอนออฟไลน์: **อนุญาตขายต่อด้วย session cache ได้สูงสุด 24 ชม.** หลัง validate ออนไลน์ครั้งล่าสุด; เมื่อกลับออนไลน์ต้อง refresh session — ถ้าใช้ไม่ได้ให้บังคับ login ใหม่
 
 ---
 

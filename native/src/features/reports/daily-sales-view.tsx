@@ -1,6 +1,7 @@
 import { useQuery } from "@tanstack/react-query";
+import { useState } from "react";
 import { Bar, BarChart, CartesianGrid, XAxis, YAxis } from "recharts";
-import { Input } from "@/components/ui/input";
+import { DatePicker } from "@/components/date-picker";
 import { Spinner } from "@/components/ui/spinner";
 import {
   type ChartConfig,
@@ -10,10 +11,9 @@ import {
 } from "@/components/ui/chart";
 import { fetchDailySales } from "@/lib/api/reports";
 import { formatKip } from "@/lib/format-kip";
-import { todayYmd } from "./date-utils";
+import { formatYmd, parseYmd, todayYmd } from "./date-utils";
 import { StatRow } from "./stat-row";
 import { reportsCopy as copy } from "./ui-copy";
-import { useState } from "react";
 
 const chartConfig = {
   cash: { label: copy.cash, color: "var(--chart-1)" },
@@ -43,11 +43,11 @@ export function DailySalesView() {
         <span className="text-muted-foreground text-xs font-medium">
           {copy.date}
         </span>
-        <Input
-          type="date"
-          value={date}
-          onChange={(e) => setDate(e.target.value || todayYmd())}
-          className="h-11 rounded-xl"
+        <DatePicker
+          mode="single"
+          value={parseYmd(date)}
+          onChange={(d) => setDate(d ? formatYmd(d) : todayYmd())}
+          className="h-11 w-full rounded-xl"
         />
       </label>
 
@@ -72,14 +72,8 @@ export function DailySalesView() {
               label={copy.transfer}
               value={formatKip(q.data.transferSalesKip)}
             />
-            <StatRow
-              label={copy.bills}
-              value={String(q.data.billCount)}
-            />
-            <StatRow
-              label={copy.items}
-              value={String(q.data.itemCount)}
-            />
+            <StatRow label={copy.bills} value={String(q.data.billCount)} />
+            <StatRow label={copy.items} value={String(q.data.itemCount)} />
           </div>
 
           <div className="rounded-2xl border p-3">

@@ -4,9 +4,11 @@ import {
   useQueryClient,
 } from "@tanstack/react-query";
 import { useVirtualizer } from "@tanstack/react-virtual";
-import { motion } from "motion/react";
+import { AnimatePresence, motion } from "motion/react";
+import { ChevronDown } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
 import { toast } from "sonner";
+import { cn } from "@/lib/utils";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -70,6 +72,7 @@ export function ShiftPanel() {
   const [zOpen, setZOpen] = useState(false);
   const [xShift, setXShift] = useState<Shift | null>(null);
   const [counted, setCounted] = useState("");
+  const [detailsOpen, setDetailsOpen] = useState(false);
 
   const current = useCurrentShift({ enabled: true });
   const openMut = useOpenShiftMutation();
@@ -130,7 +133,7 @@ export function ShiftPanel() {
 
   if (current.isLoading) {
     return (
-      <div className="flex justify-center py-12">
+      <div className="flex min-h-0 flex-1 items-center justify-center py-12">
         <Spinner />
       </div>
     );
@@ -139,82 +142,127 @@ export function ShiftPanel() {
   const open = current.data;
 
   return (
-    <div className="flex min-h-0 flex-1 flex-col gap-4">
-      {!online ? (
-        <Alert>
-          <AlertDescription>{copy.offline}</AlertDescription>
-        </Alert>
-      ) : null}
-      {!open ? (
-        <div className="space-y-3 rounded-2xl border p-4">
-          <p className="text-sm">{copy.noShift}</p>
-          <Button
-            type="button"
-            className="h-11 w-full rounded-xl"
-            disabled={!online || openMut.isPending}
-            onClick={() =>
-              openMut.mutate(undefined, {
-                onSuccess: () => {
-                  void qc.invalidateQueries({ queryKey: ["shifts-history"] });
-                },
-              })
-            }
-          >
-            {openMut.isPending ? copy.opening : copy.open}
-          </Button>
-        </div>
-      ) : (
-        <div className="space-y-3 rounded-2xl border p-4">
-          <div className="flex items-center justify-between gap-2">
-            <div>
-              <p className="font-semibold">{copy.currentOpen}</p>
-              <p className="text-muted-foreground text-xs">
-                {formatWhen(open.openedAt)}
-              </p>
-            </div>
-            <Badge className="bg-emerald-500/15 text-emerald-700 dark:text-emerald-400">
-              {copy.statusOpen}
-            </Badge>
-          </div>
-          {open.summary ? <SummaryBlock summary={open.summary} /> : null}
-          <div className="grid grid-cols-2 gap-2">
+    <div className="flex min-h-0 flex-1 flex-col gap-3">
+      <div className="shrink-0 space-y-3">
+        {!online ? (
+          <Alert>
+            <AlertDescription>{copy.offline}</AlertDescription>
+          </Alert>
+        ) : null}
+        {!open ? (
+          <div className="space-y-3 rounded-2xl border p-4">
+            <p className="text-sm">{copy.noShift}</p>
             <Button
               type="button"
-              variant="outline"
-              className="h-11 rounded-xl"
-              onClick={async () => {
-                try {
-                  const res = await fetchXReport(open.id);
-                  setXShift(res.shift);
-                  setXOpen(true);
-                } catch {
-                  toast.error(copy.loadError);
-                }
-              }}
+              className="h-11 w-full rounded-xl"
+              disabled={!online || openMut.isPending}
+              onClick={() =>
+                openMut.mutate(undefined, {
+                  onSuccess: () => {
+                    void qc.invalidateQueries({ queryKey: ["shifts-history"] });
+                  },
+                })
+              }
             >
-              {copy.xReport}
-            </Button>
-            <Button
-              type="button"
-              className="h-11 rounded-xl"
-              onClick={() => {
-                setCounted(String(open.summary?.expectedCashKip ?? 0));
-                setZOpen(true);
-              }}
-            >
-              {copy.zReport}
+              {openMut.isPending ? copy.opening : copy.open}
             </Button>
           </div>
-        </div>
-      )}
+        ) : (
+          <div className="overflow-hidden rounded-2xl border">
+            <button
+              type="button"
+              className="hover:bg-muted/40 flex w-full items-center gap-3 px-4 py-3.5 text-left transition-colors"
+              aria-expanded={detailsOpen}
+              aria-label={
+                detailsOpen ? copy.collapseDetails : copy.expandDetails
+              }
+              onClick={() => setDetailsOpen((v) => !v)}
+            >
+              <div className="min-w-0 flex-1">
+                <div className="flex items-center gap-2">
+                  <p className="font-semibold">{copy.currentOpen}</p>
+                  <Badge className="bg-emerald-500/15 text-emerald-700 dark:text-emerald-400">
+                    {copy.statusOpen}
+                  </Badge>
+                </div>
+                <p className="text-muted-foreground mt-0.5 text-xs">
+                  {formatWhen(open.openedAt)}
+                  {open.summary
+                    ? ` · ${formatKip(open.summary.totalSalesKip)}`
+                    : ""}
+                </p>
+              </div>
+              <ChevronDown
+                className={cn(
+                  "text-muted-foreground size-5 shrink-0 transition-transform duration-200",
+                  detailsOpen && "rotate-180",
+                )}
+              />
+            </button>
 
-      <div className="min-h-0 flex-1">
-        <p className="mb-2 text-sm font-semibold">{copy.history}</p>
+            <AnimatePresence initial={false}>
+              {detailsOpen ? (
+                <motion.div
+                  key="shift-details"
+                  initial={{ height: 0, opacity: 0 }}
+                  animate={{ height: "auto", opacity: 1 }}
+                  exit={{ height: 0, opacity: 0 }}
+                  transition={{ duration: 0.2 }}
+                  className="overflow-hidden"
+                >
+                  <div className="space-y-3 border-t px-4 pt-3 pb-4">
+                    {open.summary ? (
+                      <SummaryBlock summary={open.summary} />
+                    ) : null}
+                    <div className="grid grid-cols-2 gap-2">
+                      <Button
+                        type="button"
+                        variant="outline"
+                        className="h-11 rounded-xl"
+                        onClick={async () => {
+                          try {
+                            const res = await fetchXReport(open.id);
+                            setXShift(res.shift);
+                            setXOpen(true);
+                          } catch {
+                            toast.error(copy.loadError);
+                          }
+                        }}
+                      >
+                        {copy.xReport}
+                      </Button>
+                      <Button
+                        type="button"
+                        className="h-11 rounded-xl"
+                        onClick={() => {
+                          setCounted(
+                            String(open.summary?.expectedCashKip ?? 0),
+                          );
+                          setZOpen(true);
+                        }}
+                      >
+                        {copy.zReport}
+                      </Button>
+                    </div>
+                  </div>
+                </motion.div>
+              ) : null}
+            </AnimatePresence>
+          </div>
+        )}
+      </div>
+
+      <div className="flex min-h-0 flex-1 flex-col">
+        <p className="mb-2 shrink-0 text-sm font-semibold">{copy.history}</p>
         <div
           ref={parentRef}
-          className="h-[min(40vh,280px)] overflow-y-auto rounded-2xl border"
+          className="min-h-0 flex-1 overflow-y-auto rounded-2xl border"
         >
-          {rows.length === 0 && !history.isLoading ? (
+          {history.isLoading ? (
+            <div className="flex justify-center py-10">
+              <Spinner />
+            </div>
+          ) : rows.length === 0 ? (
             <p className="text-muted-foreground px-3 py-8 text-center text-sm">
               {copy.emptyHistory}
             </p>

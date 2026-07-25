@@ -1,43 +1,59 @@
 import { Badge } from "@/components/ui/badge";
-import { cn } from "@/lib/utils";
 import { useOnlineStatus } from "@/hooks/use-online-status";
 import { useSalesSync } from "@/lib/sync/use-sales-sync";
+import { cn } from "@/lib/utils";
 
 const labels = {
-  online: "ອອນລາຍ",
-  offline: "ອອຟລາຍ",
-  checking: "ກຳລັງກວດ",
+  online: 'ອອນລາຍ',
+  offline: 'ອອຟລາຍ',
+  checking: 'ກຳລັງກວດ',
+  syncing: "sync…",
+  syncError: "ຊິງຄ໌ບໍ່ສຳເລັດ",
 } as const;
 
 export function OnlinePill() {
   const { status } = useOnlineStatus();
-  const { pendingCount, isSyncing, push } = useSalesSync({
+  const { pendingCount, isSyncing, sync, lastError } = useSalesSync({
     autoOnOnline: true,
   });
+
+  const hasError = Boolean(lastError);
+  const label = isSyncing
+    ? labels.syncing
+    : hasError
+      ? labels.syncError
+      : labels[status];
 
   return (
     <button
       type="button"
       className="inline-flex items-center gap-1.5"
       onClick={() => {
-        if (pendingCount > 0 && status === "online") push();
+        if (status === "online") sync();
       }}
       title={
-        pendingCount > 0 ? `${pendingCount} pending sync` : labels[status]
+        hasError
+          ? labels.syncError
+          : pendingCount > 0
+            ? `${pendingCount} pending sync`
+            : labels[status]
       }
     >
       <Badge
         variant="outline"
         className={cn(
           status === "online" &&
+            !hasError &&
             "border-emerald-500/30 bg-emerald-500/15 text-emerald-700 dark:text-emerald-400",
           status === "offline" &&
             "border-amber-500/30 bg-amber-500/15 text-amber-800 dark:text-amber-300",
           status === "checking" && "text-muted-foreground",
+          hasError &&
+            "border-destructive/40 bg-destructive/10 text-destructive",
           isSyncing && "animate-pulse",
         )}
       >
-        {isSyncing ? "sync…" : labels[status]}
+        {label}
         {pendingCount > 0 ? ` · ${pendingCount}` : ""}
       </Badge>
     </button>

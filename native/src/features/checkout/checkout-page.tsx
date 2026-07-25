@@ -38,6 +38,10 @@ import { completeSale } from "./complete-sale";
 import { DiscountSheet } from "./discount-sheet";
 import { PaySheet, type CompletedPayment } from "./pay-sheet";
 import { SearchResults } from "./search-results";
+import {
+  canSellOutOfStock,
+  shouldWarnOutOfStock,
+} from "./stock-policy";
 import { SuccessSheet } from "./success-sheet";
 import { useCart, type CartLine } from "./use-cart";
 import { copy } from "./ui-copy";
@@ -145,11 +149,16 @@ export function CheckoutPage() {
       setShiftOpen(true);
       return;
     }
+    if (!canSellOutOfStock() && product.stock_qty <= 0) {
+      toast.error(copy.outOfStockWarn);
+      searchRef.current?.focus();
+      return;
+    }
     cart.addProduct(product);
     if (opts?.announce) {
       toast.success(`${copy.toastAddedToCart} · ${product.name}`);
     }
-    if (product.stock_qty <= 0) {
+    if (shouldWarnOutOfStock(product.stock_qty)) {
       toast.message(copy.outOfStockWarn);
     }
     searchRef.current?.focus();

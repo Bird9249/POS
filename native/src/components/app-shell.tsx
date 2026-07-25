@@ -33,7 +33,11 @@ import {
   SETTINGS_NAV_ITEM,
   USERS_NAV_ITEM,
 } from "@/features/auth/nav-access";
-import { getSessionPermissions, useSession } from "@/features/auth/use-session";
+import {
+  clearSessionCache,
+  getSessionPermissions,
+  useSession,
+} from "@/features/auth/use-session";
 import { authClient } from "@/lib/api/auth-client";
 import { getLocalDb } from "@/lib/db/client";
 import { navIcons } from "@/lib/nav";
@@ -65,6 +69,7 @@ export function AppShell({ children }: { children: ReactNode }) {
     setSigningOut(true);
     try {
       await authClient.signOut();
+      clearSessionCache();
       setSignOutOpen(false);
       toast.success("ອອກຈາກລະບົບສຳເລັດ");
       await navigate({ to: "/login" });

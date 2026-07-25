@@ -1,11 +1,20 @@
 /** YYYY-MM-DD in Asia/Vientiane. */
 export function todayYmd(): string {
+  return formatYmd(new Date());
+}
+
+export function formatYmd(date: Date): string {
   return new Intl.DateTimeFormat("en-CA", {
     timeZone: "Asia/Vientiane",
     year: "numeric",
     month: "2-digit",
     day: "2-digit",
-  }).format(new Date());
+  }).format(date);
+}
+
+/** Parse YYYY-MM-DD to a midday Vientiane Date (stable for calendars). */
+export function parseYmd(ymd: string): Date {
+  return new Date(`${ymd}T12:00:00+07:00`);
 }
 
 export function addDaysYmd(ymd: string, delta: number): string {

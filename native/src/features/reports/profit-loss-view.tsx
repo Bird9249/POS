@@ -1,8 +1,8 @@
 import { useQuery } from "@tanstack/react-query";
 import { useState } from "react";
 import { Bar, BarChart, CartesianGrid, XAxis, YAxis } from "recharts";
+import { DatePicker } from "@/components/date-picker";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
 import { Spinner } from "@/components/ui/spinner";
 import {
   type ChartConfig,
@@ -14,9 +14,10 @@ import { fetchProfitLoss } from "@/lib/api/reports";
 import { formatKip } from "@/lib/format-kip";
 import { cn } from "@/lib/utils";
 import {
+  formatYmd,
+  parseYmd,
   rangeForPreset,
   type RangePreset,
-  todayYmd,
 } from "./date-utils";
 import { StatRow } from "./stat-row";
 import { reportsCopy as copy } from "./ui-copy";
@@ -85,26 +86,21 @@ export function ProfitLossView() {
       </div>
 
       {preset === "custom" ? (
-        <div className="grid grid-cols-2 gap-2">
-          <label className="space-y-1">
-            <span className="text-muted-foreground text-xs">{copy.from}</span>
-            <Input
-              type="date"
-              value={from}
-              onChange={(e) => setFrom(e.target.value || todayYmd())}
-              className="h-11 rounded-xl"
-            />
-          </label>
-          <label className="space-y-1">
-            <span className="text-muted-foreground text-xs">{copy.to}</span>
-            <Input
-              type="date"
-              value={to}
-              onChange={(e) => setTo(e.target.value || todayYmd())}
-              className="h-11 rounded-xl"
-            />
-          </label>
-        </div>
+        <label className="block space-y-1.5">
+          <span className="text-muted-foreground text-xs font-medium">
+            {copy.from} – {copy.to}
+          </span>
+          <DatePicker
+            mode="range"
+            value={{ from: parseYmd(from), to: parseYmd(to) }}
+            onChange={(range) => {
+              if (range?.from) setFrom(formatYmd(range.from));
+              if (range?.to) setTo(formatYmd(range.to));
+              else if (range?.from) setTo(formatYmd(range.from));
+            }}
+            className="h-11 w-full rounded-xl"
+          />
+        </label>
       ) : null}
 
       {q.isLoading ? (

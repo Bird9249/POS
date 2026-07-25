@@ -14,39 +14,41 @@
 ---
 
 ## งานหลัก
-- [ ] ทดสอบฉากออฟไลน์: ขายหลายบิล → กลับออนไลน์ → sync ครบ ไม่ซ้ำ
-- [ ] Stock conflict: หลัง push ให้ pull ทับค่า server
-- [ ] Session หมดอายุตอนออฟไลน์: นโยบายชัด (ขายต่อได้ช่วงสั้น / บังคับ login เมื่อออนไลน์)
-- [ ] กันขายสต็อก 0 ตามนโยบายที่ล็อกแล้ว
-- [ ] Empty / error / retry states ทั้งแอป
+- [x] ทดสอบฉากออฟไลน์: ขายหลายบิล → กลับออนไลน์ → sync ครบ ไม่ซ้ำ
+- [x] Stock conflict: หลัง push ให้ pull ทับค่า server
+- [x] Session หมดอายุตอนออฟไลน์: นโยบายชัด (ขายต่อได้ช่วงสั้น / บังคับ login เมื่อออนไลน์)
+- [x] กันขายสต็อก 0 ตามนโยบายที่ล็อกแล้ว (WARN — เตือนแล้วยังขายได้)
+- [x] Empty / error / retry states ทั้งแอป (sync pill retry + หน้า list หลัก)
 - [ ] Touch target + keyboard/scan UX บนเครื่องจริง
-- [ ] ตรวจ permission matrix docs 04 ทีละช่อง (UI + API)
-- [ ] รวม seed สุดท้ายให้เป็นชุด demo เดียวที่รันคำสั่งเดียวจบ
+- [x] ตรวจ permission matrix docs 04 ทีละช่อง (UI + API)
+- [x] รวม seed สุดท้ายให้เป็นชุด demo เดียวที่รันคำสั่งเดียวจบ
 
 ---
 
 ## Test / Seed
 
 ### เขียน
-- [ ] **Seed สุดท้าย (`seed-pos.ts`)** รวมครบ:
+- [x] **Seed สุดท้าย (`seed-pos.ts`)** รวมครบ:
   - admin + cashier
   - categories + products (+ low stock)
   - receipt config
   - demo sales (cash/transfer)
   - shift ตัวอย่าง (ถ้าระบบกะพร้อม)
   - idempotent: รันซ้ำไม่พัง (upsert / skip ถ้ามีแล้ว)
-- [ ] **Test permission matrix** — ตาราง docs 04 ทีละช่อง (API)
-- [ ] **Test offline sync scenario** — จำลอง outbox หลายบิล → push → ไม่ซ้ำ, สต็อกสุดท้ายตรง
-- [ ] **Test stock conflict** — local ต่างจาก server แล้วหลัง pull ใช้ค่า server
-- [ ] **Test zero-stock policy** — ตามที่ล็อก (บล็อกหรือเตือน)
+- [x] **Test permission matrix** — ตาราง docs 04 ทีละช่อง (API)
+- [x] **Test offline sync scenario** — จำลอง outbox หลายบิล → push → ไม่ซ้ำ, สต็อกสุดท้ายตรง
+- [x] **Test stock conflict** — local ต่างจาก server แล้วหลัง pull ใช้ค่า server
+- [x] **Test zero-stock policy** — ตามที่ล็อก (WARN / เตือน)
 - [ ] **Smoke checklist script (optional)** — สคริปต์เรียก health → login → sync → create sale → daily report
 
 ตำแหน่งไฟล์แนะนำ:
 ```text
 webapp/src/server/scripts/seed-pos.ts
-webapp/tests/e2e-or-integration/permission-matrix.test.ts
-webapp/tests/integration/offline-sync-scenario.test.ts
-native/src/lib/sync/**/*.test.ts
+webapp/src/modules/roles/domain/contracts/permission-matrix.test.ts
+native/src/lib/sync/offline-sync-scenario.test.ts
+native/src/lib/sync/stock-conflict.test.ts
+native/src/features/checkout/stock-policy.test.ts
+native/src/features/auth/session-cache.test.ts
 ```
 
 ### รัน

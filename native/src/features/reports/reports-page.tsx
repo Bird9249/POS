@@ -63,8 +63,8 @@ export function ReportsPage() {
       : MENU.find((m) => m.id === panel)?.label ?? copy.title;
 
   return (
-    <div className="flex h-full min-h-0 flex-col">
-      <header className="flex shrink-0 items-center gap-2 border-b px-3 py-3">
+    <div className="flex min-h-0 flex-1 flex-col">
+      <header className="flex shrink-0 items-center gap-2 border-b px-1 py-3">
         {panel !== "menu" ? (
           <Button
             type="button"
@@ -81,13 +81,18 @@ export function ReportsPage() {
       </header>
 
       {!online ? (
-        <div className="p-4">
+        <div className="p-1 pt-3">
           <Alert>
             <AlertDescription>{copy.offline}</AlertDescription>
           </Alert>
         </div>
       ) : (
-        <div className="min-h-0 flex-1 overflow-y-auto p-4">
+        <div
+          className={cn(
+            "min-h-0 flex-1 pt-3",
+            panel === "shift" ? "flex flex-col overflow-hidden" : "overflow-y-auto",
+          )}
+        >
           <AnimatePresence mode="wait">
             <motion.div
               key={panel}
@@ -95,7 +100,10 @@ export function ReportsPage() {
               animate={{ opacity: 1, x: 0 }}
               exit={{ opacity: 0, x: panel === "menu" ? 12 : -12 }}
               transition={{ duration: 0.18 }}
-              className={cn(panel === "shift" && "flex h-full min-h-0 flex-col")}
+              className={cn(
+                panel === "shift" &&
+                  "flex h-full min-h-0 w-full flex-1 flex-col",
+              )}
             >
               {panel === "menu" ? (
                 <ul className="divide-y rounded-2xl border">
