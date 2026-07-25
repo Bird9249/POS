@@ -53,5 +53,8 @@ export const copy = {
   switchCamera: "ປ່ຽນກ້ອງ",
   scanBarcode: "ສະແກນບາຣໂຄດ",
   toastAddedToCart: "ເພີມກະຕ່າແລ້ວ",
+  saleQueuedOffline: "ບິນຖືກບັນທຶກໃນຄິວ sync",
+  salePersistError: "ບັນທຶກການຂາຍບໍ່ສຳເລັດ",
+  saleQueuedHint: "ຈະ sync ຂຶ້ນເມື່ອອອນລາຍ",
   outOfStockWarn: "ສະຕັອກ 0 — ເພີມແລ້ວ (ເຕືອນ)",
 } as const;

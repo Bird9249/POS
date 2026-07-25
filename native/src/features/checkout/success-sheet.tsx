@@ -17,6 +17,7 @@ type Props = {
   open: boolean;
   onOpenChange: (open: boolean) => void;
   payment: CompletedPayment | null;
+  queuedOffline?: boolean;
   onContinue: () => void;
 };
 
@@ -24,6 +25,7 @@ export function SuccessSheet({
   open,
   onOpenChange,
   payment,
+  queuedOffline = false,
   onContinue,
 }: Props) {
   const slipSrc =
@@ -91,6 +93,11 @@ export function SuccessSheet({
                   ) : null}
                 </div>
               )}
+              {queuedOffline ? (
+                <p className="text-amber-800 dark:text-amber-300 text-center text-sm text-pretty">
+                  {copy.saleQueuedHint}
+                </p>
+              ) : null}
             </div>
           ) : null}
 

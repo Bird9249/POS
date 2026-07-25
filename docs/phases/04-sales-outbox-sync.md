@@ -14,36 +14,36 @@
 ---
 
 ## Backend (`webapp`)
-- [ ] Schema: `sales`, `sale_items` (เก็บ cost snapshot ตอนขายสำหรับรายงานกำไร)
-- [ ] `POST /api/sales` idempotent ด้วย `client_sale_id`
-- [ ] ใน transaction: บันทึกบิล + ตัดสต็อก server
-- [ ] `GET /api/sales` — Admin ดูรวม / Cashier ดูเฉพาะของตนหรือกะตน
-- [ ] ปฏิเสธสิทธิ์ Cashier จากรายงานรวม (เตรียม Phase 6)
+- [x] Schema: `sales`, `sale_items` (เก็บ cost snapshot ตอนขายสำหรับรายงานกำไร)
+- [x] `POST /api/sales` idempotent ด้วย `client_sale_id`
+- [x] ใน transaction: บันทึกบิล + ตัดสต็อก server
+- [x] `GET /api/sales` — Admin ดูรวม / Cashier ดูเฉพาะของตนหรือกะตน
+- [x] ปฏิเสธสิทธิ์ Cashier จากรายงานรวม (เตรียม Phase 6)
 
 ## Frontend (`native`)
-- [ ] ตาราง `sales_outbox`, `sale_items_outbox`
-- [ ] เมื่อยืนยันชำระ:
+- [x] ตาราง `sales_outbox`, `sale_items_outbox`
+- [x] เมื่อยืนยันชำระ:
   1. สร้าง `client_sale_id` (UUID)
   2. ตัดสต็อก local (optimistic)
   3. เขียน outbox
   4. ถ้าออนไลน์ → push ทันที
-- [ ] Sync worker: **Push outbox → แล้วค่อย Pull catalog**
-- [ ] UI: จำนวนบิลรอ sync + สถานะ Syncing / Failed (retry)
-- [ ] หน้าประวัติขายกะตนเอง (อ่านจาก local + server เมื่อออนไลน์)
-- [ ] ประวัติขายเป็น list ยาว: cursor + **`useInfiniteQuery` + Virtual**; แถวเข้า/ออกใช้ **Motion**
+- [x] Sync worker: **Push outbox → แล้วค่อย Pull catalog**
+- [x] UI: จำนวนบิลรอ sync + สถานะ Syncing / Failed (retry)
+- [x] หน้าประวัติขายกะตนเอง (อ่านจาก local + server เมื่อออนไลน์)
+- [x] ประวัติขายเป็น list ยาว: cursor + **`useInfiniteQuery` + Virtual**; แถวเข้า/ออกใช้ **Motion**
 
 ---
 
 ## Test / Seed
 
 ### เขียน
-- [ ] **Seed** — catalog + users; optional: บิลขายตัวอย่าง 1–2 ใบสำหรับประวัติ (ออนไลน์)
-- [ ] **Test create sale** — POST แล้วได้บิล + สต็อกบน server ลดตามจำนวน
-- [ ] **Test idempotent** — POST ซ้ำด้วย `client_sale_id` เดิม → ได้บิลเดิม, สต็อกไม่ถูกตัดซ้ำ
-- [ ] **Test cashier list scope** — cashier เห็นเฉพาะบิลของตน (หรือกะตน)
-- [ ] **Test outbox mapper (native unit)** — จาก cart + payment → payload outbox ครบฟิลด์
-- [ ] **Test push flow (native)** — mock API: outbox pending → synced; ล้มแล้วคง pending + retry ได้
-- [ ] **Test optimistic stock** — หลังขาย local stock ลด; หลัง pull ค่าสอดคล้อง server
+- [x] **Seed** — catalog + users; optional: บิลขายตัวอย่าง 1–2 ใบสำหรับประวัติ (ออนไลน์)
+- [x] **Test create sale** — POST แล้วได้บิล + สต็อกบน server ลดตามจำนวน
+- [x] **Test idempotent** — POST ซ้ำด้วย `client_sale_id` เดิม → ได้บิลเดิม, สต็อกไม่ถูกตัดซ้ำ
+- [x] **Test cashier list scope** — cashier เห็นเฉพาะบิลของตน (หรือกะตน)
+- [x] **Test outbox mapper (native unit)** — จาก cart + payment → payload outbox ครบฟิลด์
+- [x] **Test push flow (native)** — mock API: outbox pending → synced; ล้มแล้วคง pending + retry ได้
+- [x] **Test optimistic stock** — หลังขาย local stock ลด; หลัง pull ค่าสอดคล้อง server
 
 ตำแหน่งไฟล์แนะนำ:
 ```text

@@ -1,6 +1,7 @@
 #!/usr/bin/env bun
 
 import { eq } from "drizzle-orm";
+import { createSale } from "@/modules/sales/domain/repo/create-sale";
 import { syncFromCode } from "@/modules/roles/domain/repo/sync-from-code";
 import { assignRoleToUser } from "@/modules/roles/domain/repo/assign-role-to-user";
 import { createUserService } from "@/modules/users/domain/service/create";
@@ -52,17 +53,64 @@ async function ensureUser(input: (typeof SEED_USERS)[number]) {
   return created.id;
 }
 
+async function seedSampleSales(cashierId: string) {
+  const samples = [
+    {
+      clientSaleId: "seed_sale_cash_001",
+      soldAt: new Date(Date.now() - 60 * 60 * 1000),
+      lines: [
+        { productId: "prod_water_500", quantity: 2, unitPrice: 5000 },
+        { productId: "prod_chips", quantity: 1, unitPrice: 7000 },
+      ],
+      payment: {
+        method: "cash" as const,
+        amountDue: 17000,
+        amountReceived: 20000,
+        changeAmount: 3000,
+      },
+    },
+    {
+      clientSaleId: "seed_sale_transfer_001",
+      soldAt: new Date(Date.now() - 30 * 60 * 1000),
+      lines: [{ productId: "prod_cola_330", quantity: 1, unitPrice: 8000 }],
+      payment: {
+        method: "transfer" as const,
+        amountDue: 8000,
+        confirmedByStaff: true as const,
+        slipImageKey: "seed/slip-transfer-001.jpg",
+      },
+    },
+  ];
+
+  let created = 0;
+  for (const sample of samples) {
+    const result = await createSale(sample, cashierId, db);
+    if (!result.ok) {
+      logger.warn(`Sample sale skipped (${sample.clientSaleId}): ${result.error}`);
+      continue;
+    }
+    if (result.created) created += 1;
+  }
+  logger.info(`Sample sales ensured: ${samples.length} (new: ${created})`);
+}
+
 async function seedPos() {
   try {
     logger.info("Starting POS seed...");
     await syncFromCode(db);
     logger.info("RBAC roles synced (admin, cashier)");
 
+    let cashierId: string | null = null;
     for (const u of SEED_USERS) {
-      await ensureUser(u);
+      const id = await ensureUser(u);
+      if (u.roleId === "cashier") cashierId = id;
     }
 
     await seedCatalog(db);
+
+    if (cashierId) {
+      await seedSampleSales(cashierId);
+    }
 
     logger.info("POS seed completed successfully");
     process.exit(0);

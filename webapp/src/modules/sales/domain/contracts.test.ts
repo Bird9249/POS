@@ -1,7 +1,7 @@
 import { describe, expect, test } from "bun:test";
 import { CreateSaleSchema } from "./contracts";
 
-describe("CreateSaleSchema (draft)", () => {
+describe("CreateSaleSchema", () => {
   test("accepts cash sale payload", () => {
     const result = CreateSaleSchema.safeParse({
       clientSaleId: "sale_local_001",

@@ -6,6 +6,7 @@ describe("filterNavByPermissions", () => {
   test("admin sees all tabs", () => {
     const perms = [
       Perm.salesCreate,
+      Perm.salesRead,
       Perm.productsManage,
       Perm.reportsRead,
       Perm.settingsManage,
@@ -13,16 +14,17 @@ describe("filterNavByPermissions", () => {
     const nav = filterNavByPermissions(POS_NAV_ITEMS, perms);
     expect(nav.map((n) => n.to)).toEqual([
       "/checkout",
+      "/sales",
       "/products",
       "/reports",
       "/settings",
     ]);
   });
 
-  test("cashier only sees checkout", () => {
+  test("cashier sees checkout + sales history", () => {
     const perms = [Perm.salesCreate, Perm.salesRead, Perm.productsRead];
     const nav = filterNavByPermissions(POS_NAV_ITEMS, perms);
-    expect(nav.map((n) => n.to)).toEqual(["/checkout"]);
+    expect(nav.map((n) => n.to)).toEqual(["/checkout", "/sales"]);
   });
 
   test("empty permissions sees nothing", () => {

@@ -39,10 +39,11 @@ fn install_linux_media_permissions<R: tauri::Runtime>(webview: &tauri::Webview<R
 }
 
 fn catalog_migrations() -> Vec<Migration> {
-    vec![Migration {
-        version: 1,
-        description: "create_local_catalog",
-        sql: r#"
+    vec![
+        Migration {
+            version: 1,
+            description: "create_local_catalog",
+            sql: r#"
 CREATE TABLE IF NOT EXISTS categories_local (
   id TEXT PRIMARY KEY NOT NULL,
   name TEXT NOT NULL,
@@ -79,8 +80,47 @@ CREATE TABLE IF NOT EXISTS meta (
   value TEXT NOT NULL
 );
 "#,
-        kind: MigrationKind::Up,
-    }]
+            kind: MigrationKind::Up,
+        },
+        Migration {
+            version: 2,
+            description: "create_sales_outbox",
+            sql: r#"
+CREATE TABLE IF NOT EXISTS sales_outbox (
+  client_sale_id TEXT PRIMARY KEY NOT NULL,
+  sold_at TEXT NOT NULL,
+  payload_json TEXT NOT NULL,
+  status TEXT NOT NULL DEFAULT 'pending',
+  error TEXT,
+  server_sale_id TEXT,
+  amount_due INTEGER NOT NULL,
+  payment_method TEXT NOT NULL,
+  created_at TEXT NOT NULL,
+  updated_at TEXT NOT NULL
+);
+
+CREATE INDEX IF NOT EXISTS idx_sales_outbox_status
+  ON sales_outbox (status, created_at);
+
+CREATE TABLE IF NOT EXISTS sale_items_outbox (
+  id TEXT PRIMARY KEY NOT NULL,
+  client_sale_id TEXT NOT NULL,
+  product_id TEXT NOT NULL,
+  product_name TEXT NOT NULL,
+  quantity INTEGER NOT NULL,
+  unit_price INTEGER NOT NULL,
+  discount_type TEXT,
+  discount_value INTEGER,
+  line_total INTEGER NOT NULL,
+  FOREIGN KEY (client_sale_id) REFERENCES sales_outbox(client_sale_id) ON DELETE CASCADE
+);
+
+CREATE INDEX IF NOT EXISTS idx_sale_items_outbox_sale
+  ON sale_items_outbox (client_sale_id);
+"#,
+            kind: MigrationKind::Up,
+        },
+    ]
 }
 
 #[cfg_attr(mobile, tauri::mobile_entry_point)]

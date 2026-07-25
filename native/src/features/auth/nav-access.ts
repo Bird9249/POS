@@ -1,6 +1,11 @@
 import { Perm, hasPermission } from "./permissions";
 
-export type PosPath = "/checkout" | "/products" | "/reports" | "/settings";
+export type PosPath =
+  | "/checkout"
+  | "/sales"
+  | "/products"
+  | "/reports"
+  | "/settings";
 
 export type PosNavItem = {
   to: PosPath;
@@ -14,6 +19,11 @@ export const POS_NAV_ITEMS: PosNavItem[] = [
     to: "/checkout",
     label: "ຂາຍ",
     requiredPermissions: [Perm.salesCreate],
+  },
+  {
+    to: "/sales",
+    label: "ປະຫວັດ",
+    requiredPermissions: [Perm.salesRead],
   },
   {
     to: "/products",

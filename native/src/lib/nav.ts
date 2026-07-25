@@ -1,5 +1,6 @@
 import {
   ClipboardList,
+  History,
   Package,
   Settings,
   ShoppingCart,
@@ -17,6 +18,7 @@ export type NavItem = {
 
 export const navIcons: Record<PosPath, LucideIcon> = {
   "/checkout": ShoppingCart,
+  "/sales": History,
   "/products": Package,
   "/reports": ClipboardList,
   "/settings": Settings,

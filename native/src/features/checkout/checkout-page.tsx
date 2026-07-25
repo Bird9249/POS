@@ -1,4 +1,4 @@
-import { useQuery } from "@tanstack/react-query";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { Minus, Plus, ScanBarcode, Search, Tag, Trash2, X } from "lucide-react";
 import { AnimatePresence, motion } from "motion/react";
 import { useEffect, useRef, useState } from "react";
@@ -18,6 +18,7 @@ import {
 } from "@/features/auth/use-session";
 import { BarcodeScanDialog } from "@/features/products/barcode-scan-dialog";
 import { useDebouncedValue } from "@/hooks/use-debounced-value";
+import { useOnlineStatus } from "@/hooks/use-online-status";
 import { getLocalDb } from "@/lib/db/client";
 import {
   countLocalProducts,
@@ -26,7 +27,9 @@ import {
 } from "@/lib/db/catalog-repo";
 import type { LocalProduct } from "@/lib/db/types";
 import { formatKip } from "@/lib/format-kip";
+import { PENDING_SALES_QUERY_KEY } from "@/lib/sync/use-sales-sync";
 import { lineTotal } from "./cart-math";
+import { completeSale } from "./complete-sale";
 import { DiscountSheet } from "./discount-sheet";
 import { PaySheet, type CompletedPayment } from "./pay-sheet";
 import { SearchResults } from "./search-results";
@@ -40,6 +43,8 @@ export function CheckoutPage() {
     session as { permissions?: string[] } | null | undefined,
   );
   const canSell = hasPermission(permissions, Perm.salesCreate);
+  const { status: onlineStatus } = useOnlineStatus();
+  const qc = useQueryClient();
 
   const cart = useCart();
   const searchRef = useRef<HTMLInputElement>(null);
@@ -47,12 +52,14 @@ export function CheckoutPage() {
   const debouncedQ = useDebouncedValue(q, 200);
   const [showResults, setShowResults] = useState(false);
   const [scanOpen, setScanOpen] = useState(false);
+  const [completing, setCompleting] = useState(false);
 
   const [discountLine, setDiscountLine] = useState<CartLine | null>(null);
   const [billDiscountOpen, setBillDiscountOpen] = useState(false);
   const [payOpen, setPayOpen] = useState(false);
   const [successOpen, setSuccessOpen] = useState(false);
   const [lastPayment, setLastPayment] = useState<CompletedPayment | null>(null);
+  const [queuedOffline, setQueuedOffline] = useState(false);
 
   const localCount = useQuery({
     queryKey: ["local-product-count"],
@@ -390,12 +397,39 @@ export function CheckoutPage() {
 
       <PaySheet
         open={payOpen}
-        onOpenChange={setPayOpen}
+        onOpenChange={(open) => {
+          if (completing) return;
+          setPayOpen(open);
+        }}
         amountDue={cart.totals.amountDue}
         onComplete={(payment) => {
-          setPayOpen(false);
-          setLastPayment(payment);
-          setSuccessOpen(true);
+          void (async () => {
+            setCompleting(true);
+            try {
+              const result = await completeSale({
+                lines: cart.lines,
+                billDiscount: cart.billDiscount,
+                payment,
+                online: onlineStatus === "online",
+              });
+              setQueuedOffline(!result.pushed);
+              setPayOpen(false);
+              setLastPayment(payment);
+              setSuccessOpen(true);
+              cart.clear();
+              await qc.invalidateQueries({ queryKey: PENDING_SALES_QUERY_KEY });
+              await qc.invalidateQueries({ queryKey: ["local-product-count"] });
+              if (!result.pushed) {
+                toast.message(copy.saleQueuedOffline);
+              }
+            } catch (err) {
+              toast.error(
+                err instanceof Error ? err.message : copy.salePersistError,
+              );
+            } finally {
+              setCompleting(false);
+            }
+          })();
         }}
       />
 
@@ -403,10 +437,11 @@ export function CheckoutPage() {
         open={successOpen}
         onOpenChange={setSuccessOpen}
         payment={lastPayment}
+        queuedOffline={queuedOffline}
         onContinue={() => {
-          cart.clear();
           setSuccessOpen(false);
           setLastPayment(null);
+          setQueuedOffline(false);
           searchRef.current?.focus();
         }}
       />
